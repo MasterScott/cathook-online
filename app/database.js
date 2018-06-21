@@ -115,12 +115,12 @@ class DbInterface
 
     async addUserRole(userId, roleId)
     {
-        await this.client.query('INSERT INTO userroles (user_id, role_id) VALUES ($1, $2)', userId, roleId);
+        await this.client.query('INSERT INTO userroles (user_id, role_id) VALUES ($1, $2)', [userId, roleId]);
     }
 
     async deleteUserRole(userId, roleId)
     {
-        const result = await this.client.query('DELETE FROM userroles WHERE user_id = $1 AND role_id = $2', userId, roleId);
+        const result = await this.client.query('DELETE FROM userroles WHERE user_id = $1 AND role_id = $2', [userId, roleId]);
         return !!result.rowCount;
     }
 
