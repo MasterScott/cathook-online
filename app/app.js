@@ -15,6 +15,7 @@ module.exports = (app) => {
     app.use('/invite', require('./route/invite'));
     app.use('/user', require('./route/user'));
     app.use('/role', require('./route/role'));
+    app.use('/software', require('./route/software'));
 
     app.use(errorHandler);
 }

@@ -13,7 +13,7 @@ router.post('/', [
 //    middleware.authorization({ role: 'admin' }),
     check('name').isLength({ min: 3, max: 32 }),
     check('developers').isLength({ max: 255 }),
-    check('url').isLength({ max: 255 }).isURL(),
+    check('url').optional().isLength({ max: 255 }).isURL(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
@@ -39,7 +39,7 @@ router.delete('/:id', [
 router.get('/', [
     middleware.authentication
 ], wrap(async function(req, res) {
-    res.status(200).json(Server.sys.software.getAllSoftware());
+    res.status(200).json(await Server.sys.software.getAllSoftware());
 }));
 
 module.exports = router;
