@@ -8,42 +8,34 @@ module.exports = wrap(async function(req, res, next)
     if (!req.locals)
         req.locals = {};
 
-    if (req.locals.hasOwnProperty('auth'))
+    if (req.locals.hasOwnProperty('user'))
     {
-        if (req.locals.auth)
-            next();
+        next();
         return;
     }
 
     if (!req.query.hasOwnProperty('key'))
     {
-        res.status(401).end('Missing key');
-        req.locals.auth = false;
-        return;
+        throw new Server.errors.UnprocessableEntity('Missing key');
     }
     const key = req.query.key;
 
     if (typeof key != 'string')
     {
-        res.status(400).end('Bad key');
-        req.locals.auth = false;
-        return;
+        throw new Server.errors.UnprocessableEntity('Bad key type');
     }
     const user = await Server.db.getUserFromKey(key);
     if (user == null)
     {
-        res.status(401).end('Key not found');
-        req.locals.auth = false;
-        return;
+        throw new Server.errors.Unauthorized('Key not found');
     }
 
-    if (user.username == 'anonymous')
+    if (user.username == Server.config.anonymousAccount)
     {
         user.anonymous = true;
         req.locals.anonymous = true;
     }
 
-    req.locals.auth = true;
     req.locals.user = user;
     next();
 });

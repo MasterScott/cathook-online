@@ -4,9 +4,11 @@ const bodyparser = require('body-parser');
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const errorHandler = require('./errorHandler');
 
 module.exports = (app) => {
-    app.use(cors({ origin: '*' }))
+    app.use(errorHandler);
+    app.use(cors({ origin: '*' }));
     app.use(bodyparser.json());
     app.use(bodyparser.urlencoded({ extended: true }));
 

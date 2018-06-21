@@ -18,7 +18,7 @@ module.exports = {
             if (!user.anonymous && claim.username == 'anonymous')
                 await Server.db.reclaimSteamId(user.id, steamId);
             else
-                throw new Error('SteamID already claimed');
+                throw new Server.errors.Conflict();
         }
     },
     identify: async function identify(list)

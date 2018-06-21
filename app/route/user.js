@@ -25,21 +25,15 @@ router.post('/register', [
 ], wrap(async function(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-        return res.status(422).json({ errors: errors.array() });
+        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
     const data = matchedData(req);
-    try
-    {
-        const key = await Server.sys.user.register(data);
-        res.status(201).end(key);
-    } catch (e)
-    {
-        res.status(400).end(e.message);
-    }
+    const key = await Server.sys.user.register(data);
+    res.status(201).end(key);
 }));
 
 // Get user info
 router.get('/id/:name', (req, res) => {
-    res.status(501).end();
+    throw new Server.errors.NotImplemented();
 });
 
 // Get user by Steam ID
@@ -48,13 +42,13 @@ router.get('/steam/:steam', [
 ], wrap(async function(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-        return res.status(422).json({ errors: errors.array() });
+        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
     const data = matchedData(req);
     const user = await Server.db.getUserBySteamId(data.steam);
     if (user)
         res.status(200).json(Server.sys.user.info(user));
     else
-        res.status(404).end('Not found');
+        throw new Server.errors.NotFound();
 }));
 
 // Return access key
@@ -64,18 +58,18 @@ router.post('/login', [
 ], wrap(async function(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-        return res.status(422).json({ errors: errors.array() });
+        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
     const data = matchedData(req);
     const key = await Server.sys.user.login(data.username, data.password);
     if (key == null)
-        res.status(401).end('null');
+        throw new Server.errors.InternalServerError();
     else
         res.status(200).end(key);
 }));
 
 // Generate new access key
 router.post('/reset_key', (req, res) => {
-    res.status(501).end();
+    throw new Server.errors.NotImplemented();
 });
 
 module.exports = router;

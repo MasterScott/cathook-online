@@ -5,17 +5,13 @@ const config = require('../config');
 
 class DbInterface
 {
-    constructor()
-    {
-    }
-
     async init()
     {
         this.client = new Client({
             user: config.db.username,
             password: config.db.password,
-            host: 'localhost',
-            database: 'cathook'
+            database: config.db.name,
+            host: 'localhost'
         });
         this.client.connect();
     }
@@ -100,15 +96,6 @@ class DbInterface
         if (result.rowCount !== 1)
             return null;
         return result.rows[0];
-    }
-
-    dataPublic(user)
-    {
-        return {
-            username: user.username,
-            registered: user.registered,
-            color: user.color
-        }
     }
 }
 

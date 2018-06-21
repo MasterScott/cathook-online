@@ -9,12 +9,12 @@ const Server = require('../Server');
 
 // Store stats (kills, etc) on round end
 router.post('/store', (req, res) => {
-    res.status(501).end();
+    throw new Server.errors.NotImplemented();
 });
 
 // Keep the user online/ingame/etc status
 router.post('/online', (req, res) => {
-    res.status(501).end();
+    throw new Server.errors.NotImplemented();
 });
 
 // Set current SteamID and stuff
@@ -24,13 +24,9 @@ router.post('/startup', [
 ], wrap(async function(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-        return res.status(422).json({ errors: errors.array() });
+        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
     const data = matchedData(req);
-    try {
-        await Server.sys.game.claimSteamId(req.locals.user, data.steam);
-    } catch (e) {
-        return res.status(500).end(e.message);
-    }
+    await Server.sys.game.claimSteamId(req.locals.user, data.steam);
     res.status(200).end();
 }));
 
@@ -41,7 +37,7 @@ router.get('/identify', [
 ], (async function (req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-        return res.status(422).json({ errors: errors.array() });
+        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
     const data = matchedData(req);
     const ids = data.ids.split(',');
     const identified = await Server.sys.game.identify(ids);

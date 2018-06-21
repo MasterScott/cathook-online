@@ -1,9 +1,11 @@
 'use strict';
 
-let Server = {
+const Server = {
     logger: null,
     db: null,
-    sys: null
+    sys: null,
+    config: require('../config'),
+    errors: require('./errors')
 };
 
 module.exports = Server;

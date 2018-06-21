@@ -11,24 +11,16 @@ const middleware = require('../middleware');
 router.post('/', [
     middleware.authentication
 ], wrap(async function(req, res) {
-    try {
-        const key = await Server.sys.invite.createInvite(req.locals.user);
-        res.status(201).end(key);
-    } catch (e) {
-        res.status(400).end(e.message);
-    }
+    const key = await Server.sys.invite.createInvite(req.locals.user);
+    res.status(201).end(key);
 }));
 
 // Get all invites you generated
 router.get('/', [
     middleware.authentication
 ], wrap(async function(req, res) {
-    try {
-        const invites = await Server.sys.invite.getInvites(req.locals.user);
-        res.status(200).json(invites);
-    } catch (e) {
-        res.status(400).end(e.message);
-    }
+    const invites = await Server.sys.invite.getInvites(req.locals.user);
+    res.status(200).json(invites);
 }));
 
 module.exports = router;
