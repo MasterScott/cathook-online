@@ -97,32 +97,123 @@ class DbInterface
         return result.rows[0];
     }
 
-    async getRoles(userId)
+    async getUserId(username)
     {
-        const result = await this.client.query('SELECT * FROM roles INNER JOIN userroles ON userroles.role = roles.id WHERE userroles."user" = $1', [userId]);
+        const result = await this.client.query('SELECT id FROM users WHERE username = $1', [username]);
+        if (result.rowCount == 0)
+            return null;
+        return result.row[0].id;
+    }
+
+    /* USER-ROLE */
+
+    async checkUserRole(userId, roleId)
+    {
+        const result = await this.client.query('SELECT 1 FROM userroles WHERE user_id = $1 AND role_id = $2 LIMIT 1', [userId, roleId]);
         return result.rows;
     }
+
+    async addUserRole(userId, roleId)
+    {
+        await this.client.query('INSERT INTO userroles (user_id, role_id) VALUES ($1, $2)', userId, roleId);
+    }
+
+    async deleteUserRole(userId, roleId)
+    {
+        const result = await this.client.query('DELETE FROM userroles WHERE user_id = $1 AND role_id = $2', userId, roleId);
+        return !!result.rowCount;
+    }
+
+    async getUserRoles(userId)
+    {
+        const result = await this.client.query('SELECT * FROM roles INNER JOIN userroles ON userroles.role_id = roles.id WHERE userroles.user_id = $1', [userId]);
+        return result.rows;
+    }
+
+    /* ROLE */
 
     async checkRoleExists(name)
     {
         const result = await this.client.query('SELECT 1 FROM roles WHERE name = $1 LIMIT 1', [name]);
-        return result.rowCount != 0;
+        return !!result.rowCount;
     }
 
     async createRole(name, display)
     {
-        await this.client.query('INSERT INTO roles (name, ingame) VALUES ($1, $2)', [name, display]);
+        const result = await this.client.query('INSERT INTO roles (name, display) VALUES ($1, $2) RETURNING id', [name, display]);
+        if (!result.rowCount)
+            return null;
+        return result.rows[0].id;
     }
 
-    async deleteRoleAndUserRoles(name)
+    async deleteRole(id)
     {
-        const result = await this.client.query('DELETE FROM roles WHERE name = $1 RETURNING id LIMIT 1', [name]);
-        if (result.rowCount == 0)
-            return false;
-        const id = result.rows[0].id;
-        await this.client.query('DELETE FROM userroles WHERE role = $1', [id]);
-        return true;
+        const result = await this.client.query('DELETE FROM roles WHERE name = $1', [id]);
+        return !!result.rowCount;
     }
+
+    async getAllRoles()
+    {
+        const result = await this.client.query('SELECT * FROM roles');
+        return result.rows;
+    }
+
+    async getRole(id)
+    {
+        const result = await this.client.query('SELECT * FROM roles WHERE id = $1 LIMIT 1', [id]);
+        return result[0];
+    }
+
+    async getRoleId(name)
+    {
+        const result = await this.client.query('SELECT id FROM roles WHERE name = $1 LIMIT 1', [name]);
+        if (result.rowCount !== 1)
+            return null;
+        return result.rows[0].id;
+    }
+
+    /* SOFTWARE */
+
+    async checkSoftwareExists(name)
+    {
+        const result = await this.client.query('SELECT 1 FROM software WHERE name = $1 LIMIT 1', [name]);
+        return !!result.rowCount;
+    }
+
+    async createSoftware(name, developers, url)
+    {
+        const result = await this.client.query('INSERT INTO software (name, developers, url) VALUES ($1, $2, $3) RETURNING id', [name, developers, url]);
+        if (result.rowCount !== 1)
+            return null;
+        return result.rows[0].id;
+    }
+
+    async deleteSoftware(id)
+    {
+        const result = await this.client.query('DELETE FROM software WHERE id = $1', [id]);
+        return !!result.rowCount;
+    }
+
+    async getAllSoftware()
+    {
+        const result = await this.client.query('SELECT * FROM software');
+        return result.rows;
+    }
+
+    async getSoftware(id)
+    {
+        const result = await this.client.query('SELECT * FROM software WHERE id = $1 LIMIT 1', [id]);
+        return result[0];
+    }
+
+    async getSoftwareId(name)
+    {
+        const result = await this.client.query('SELECT id FROM software WHERE name = $1 LIMIT 1', [name]);
+        if (result.rowCount !== 1)
+            return null;
+        return result.rows[0].id;
+    }
+
 }
 
 module.exports = DbInterface;

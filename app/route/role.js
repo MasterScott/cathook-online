@@ -7,25 +7,39 @@ const { matchedData, sanitize } = require('express-validator/filter');
 const Server = require('../Server');
 const middleware = require('../middleware');
 
+const nameRegex = /^[0-9a-z_]{1,32}$/;
+
 // Create a new role
 router.post('/', [
     middleware.authentication,
-    check('name').isLength({ min: 3, max: 32 }),
+    check('name').matches(nameRegex),
     check('display').optional().isLength({ min: 3, max: 32 }),
-//    middleware.authorization({ role: 'admin' }),
+    middleware.authorization({ role: 'admin' }),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    Server.logger.info('Creating a new role %s "%s"', req.locals.data.name, req.locals.data.display);
-    await Server.sys.role.createRole(req.locals.data.name, req.locals.data.display);
-    res.status(201).end();
+    Server.logger.info('+ role %s "%s"', req.locals.data.name, req.locals.data.display);
+    const id = await Server.sys.role.create(req.locals.data.name, req.locals.data.display);
+    res.status(201).end(id);
 }));
 
-// Get all invites you generated
+// Delete role by id
+router.delete('/:id', [
+    middleware.authentication,
+    check('id').isNumeric(),
+    middleware.authorization({ role: 'admin' }),
+    middleware.passedAllChecks
+], wrap(async function(req, res) {
+    const data = req.locals.data;
+    Server.logger.info('- role %s', data.id);
+    Server.sys.role.delete(data.id);
+    res.status(200).end();
+}));
+
+// List all roles
 router.get('/', [
     middleware.authentication
 ], wrap(async function(req, res) {
-    const invites = await Server.sys.invite.getInvites(req.locals.user);
-    res.status(200).json(invites);
+    res.status(200).json(Server.sys.role.getAllRoles());
 }));
 
 module.exports = router;

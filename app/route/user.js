@@ -58,6 +58,54 @@ router.post('/login', [
         res.status(200).end(key);
 }));
 
+// Add user role
+router.post('/id/:name/role/:id', [
+    middleware.authentication,
+    middleware.authorization({ role: 'admin' }),
+    check('name').matches(usernameRegex),
+    check('id').isNumeric(),
+    middleware.passedAllChecks
+], wrap(async function(req, res) {
+    const data = req.locals.data;
+    Server.sys.user.addRole(data.name, data.id);
+    res.status(200).end();
+}));
+
+// Remove role
+router.delete('/id/:name/role/:id', [
+    middleware.authentication,
+    middleware.authorization({ role: 'admin' }),
+    check('name').matches(usernameRegex),
+    check('id').isNumeric(),
+    middleware.passedAllChecks
+], wrap(async function(req, res) {
+    const data = req.locals.data;
+    Server.sys.user.removeRole(data.name, data.id);
+    res.status(200).end();
+}));
+
+// Update software
+router.put('/id/:name/software/:id', [
+    middleware.authentication,
+    check('name').matches(usernameRegex),
+    check('id').isNumeric(),
+    middleware.passedAllChecks
+], wrap(async function(req, res) {
+    throw new Server.errors.NotImplemented();
+}));
+
+// Update color
+router.put('/id/:name/color/:color', [
+    middleware.authentication,
+    middleware.authorization({ role: 'color' }),
+    check('name').matches(usernameRegex),
+    check('color').matches(/^[0-9a-f]{6}$/),
+    middleware.passedAllChecks
+], wrap(async function(req, res) {
+    throw new Server.errors.NotImplemented();
+}));
+
+
 // Generate new access key
 router.post('/reset_key', (req, res) => {
     throw new Server.errors.NotImplemented();

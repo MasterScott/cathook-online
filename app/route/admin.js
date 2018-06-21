@@ -9,9 +9,6 @@ const middleware = require('../middleware');
 /*
     Administrative Tools
 
-    - Add new software types
-    - Add new roles
-    - Change user roles
     - Change user colors
     - Create new invites
 */

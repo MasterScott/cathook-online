@@ -36,5 +36,30 @@ module.exports = {
             color: raw.color,
             mail_confirmed: raw.mail_confirmed
         }
+    },
+    hasRole: function hasRole(userId, roleId)
+    {
+        return await Server.db.checkUserRole(userId, roleId);
+    },
+    addRole: function addRole(username, roleId)
+    {
+        const userId = await Server.db.getUserId(username);
+        const has = await this.hasRole(username, roleId);
+        if (has)
+            return new Server.errors.Conflict('User already has role');
+        Server.db.addUserRole(userId, roleId);    
+    },
+    removeRole: function removeRole(username, roleId)
+    {
+        const userId = await Server.db.getUserId(username);
+        const had = await Server.db.deleteUserRole(userId, roleId);
+        if (!had)
+            throw new Server.errors.NotFound('User does not have role');
+    },
+    getRoles: function getRoles(username) 
+    {
+        const userId = await Server.db.getUserId(username);
+        const roles = await Server.db.getUserRoles(userId);
+        return roles;
     }
 };
