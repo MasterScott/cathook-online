@@ -17,8 +17,9 @@ router.post('/', [
     middleware.authorization({ role: 'admin' }),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    Server.logger.info('+ role %s "%s"', req.locals.data.name, req.locals.data.display);
-    const id = await Server.sys.role.create(req.locals.data.name, req.locals.data.display);
+    const data = req.locals.data;
+    Server.logger.info('+ role %s "%s"', data.name, data.display);
+    const id = await Server.sys.role.create(data);
     res.status(201).end(id);
 }));
 
@@ -31,7 +32,7 @@ router.delete('/:id', [
 ], wrap(async function(req, res) {
     const data = req.locals.data;
     Server.logger.info('- role %s', data.id);
-    Server.sys.role.delete(data.id);
+    await Server.sys.role.delete(data.id);
     res.status(200).end();
 }));
 
@@ -39,7 +40,7 @@ router.delete('/:id', [
 router.get('/', [
     middleware.authentication
 ], wrap(async function(req, res) {
-    res.status(200).json(Server.sys.role.getAllRoles());
+    res.status(200).json(await Server.sys.role.getAllRoles());
 }));
 
 module.exports = router;

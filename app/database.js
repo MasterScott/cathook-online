@@ -24,7 +24,7 @@ class DbInterface
 
     async storeInvite(userId, key)
     {
-        await this.client.query('INSERT INTO invites (created_by, value) VALUES ($1, $2)', [userId, key]);
+        await this.client.query('INSERT INTO invites (created_by, key) VALUES ($1, $2)', [userId, key]);
     }
 
     async getInvites(userId)
@@ -41,7 +41,7 @@ class DbInterface
 
     async consumeInvite(key)
     {
-        const result = await this.client.query('DELETE FROM invites WHERE value = $1 RETURNING created_by', [key]);
+        const result = await this.client.query('DELETE FROM invites WHERE key = $1 RETURNING created_by', [key]);
         if (result.rowCount != 0)
             return { referrer: result.rows[0].created_by };
         else
@@ -61,7 +61,7 @@ class DbInterface
 
     async getUserBySteamId(steamId)
     {
-        const result = await this.client.query('SELECT * FROM steamid INNER JOIN users ON steamid.user = users.id WHERE steamid.steam3 = $1 LIMIT 1', [steamId]);
+        const result = await this.client.query('SELECT * FROM steamid INNER JOIN users ON steamid.user_id = users.id WHERE steamid.steam3 = $1 LIMIT 1', [steamId]);
         return result.rows[0];
     }
 
@@ -72,12 +72,12 @@ class DbInterface
 
     async claimSteamId(steamId, userId)
     {
-        await this.client.query('INSERT INTO steamid ("user", steam3) VALUES ($1, $2)', [userId, steamId]);
+        await this.client.query('INSERT INTO steamid (user_id, steam3) VALUES ($1, $2)', [userId, steamId]);
     }
 
     async getUsersFromSteamIDs(list)
     {
-        const result = await this.client.query('SELECT * FROM steamid INNER JOIN users ON steamid."user" = users.id WHERE steamid.steam3 = ANY ($1::int[])', [list]);
+        const result = await this.client.query('SELECT * FROM steamid INNER JOIN users ON steamid.user_id = users.id WHERE steamid.steam3 = ANY ($1::int[])', [list]);
         return result.rows;
     }
 
@@ -102,7 +102,7 @@ class DbInterface
         const result = await this.client.query('SELECT id FROM users WHERE username = $1', [username]);
         if (result.rowCount == 0)
             return null;
-        return result.row[0].id;
+        return result.rows[0].id;
     }
 
     /* USER-ROLE */
@@ -110,7 +110,7 @@ class DbInterface
     async checkUserRole(userId, roleId)
     {
         const result = await this.client.query('SELECT 1 FROM userroles WHERE user_id = $1 AND role_id = $2 LIMIT 1', [userId, roleId]);
-        return result.rows;
+        return !!result.rowCount;
     }
 
     async addUserRole(userId, roleId)
@@ -135,6 +135,12 @@ class DbInterface
     async checkRoleExists(name)
     {
         const result = await this.client.query('SELECT 1 FROM roles WHERE name = $1 LIMIT 1', [name]);
+        return !!result.rowCount;
+    }
+
+    async checkRoleIdExists(id)
+    {
+        const result = await this.client.query('SELECT 1 FROM roles WHERE id = $1 LIMIT 1', [id]);
         return !!result.rowCount;
     }
 

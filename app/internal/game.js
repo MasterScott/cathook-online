@@ -25,14 +25,14 @@ module.exports = {
     {
         const data = await Server.db.getUsersFromSteamIDs(list);
         console.log(data);
-        for (i in data)
+        for (const i in data)
         {
             data[i] = {
                 steam3: data[i].steam3,
                 verified: data[i].verified,
                 username: data[i].username,
                 color: data[i].color,
-                roles: []
+                roles: await Server.sys.user.getRoles(data[i].username)
             }
         }
         return data;

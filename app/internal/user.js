@@ -33,30 +33,38 @@ module.exports = {
         return {
             username: raw.username,
             registered_ts: raw.registered_ts,
-            color: raw.color,
-            mail_confirmed: raw.mail_confirmed
+            color: raw.color
         }
     },
-    hasRole: function hasRole(userId, roleId)
+    hasRole: async function hasRole(userId, roleId)
     {
+        const roleExists = await Server.db.checkRoleIdExists(roleId);
+        if (!roleExists)
+        throw new Server.errors.NotFound('Role does not exist');
         return await Server.db.checkUserRole(userId, roleId);
     },
-    addRole: function addRole(username, roleId)
+    addRole: async function addRole(username, roleId)
     {
         const userId = await Server.db.getUserId(username);
-        const has = await this.hasRole(username, roleId);
+        const roleExists = await Server.db.checkRoleIdExists(roleId);
+        if (!roleExists)
+            throw new Server.errors.NotFound('Role does not exist');
+        const has = await this.hasRole(userId, roleId);
         if (has)
-            return new Server.errors.Conflict('User already has role');
+            throw new Server.errors.Conflict('User already has role');
         Server.db.addUserRole(userId, roleId);    
     },
-    removeRole: function removeRole(username, roleId)
+    removeRole: async function removeRole(username, roleId)
     {
+        const roleExists = await Server.db.checkRoleIdExists(roleId);
+        if (!roleExists)
+            throw new Server.errors.NotFound('Role does not exist');
         const userId = await Server.db.getUserId(username);
         const had = await Server.db.deleteUserRole(userId, roleId);
         if (!had)
             throw new Server.errors.NotFound('User does not have role');
     },
-    getRoles: function getRoles(username) 
+    getRoles: async function getRoles(username) 
     {
         const userId = await Server.db.getUserId(username);
         const roles = await Server.db.getUserRoles(userId);

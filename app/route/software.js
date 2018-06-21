@@ -18,20 +18,20 @@ router.post('/', [
 ], wrap(async function(req, res) {
     const data = req.locals.data;
     Server.logger.info('Creating new software %s, by %s (%s)', data.name, data.developers, data.url);
-    await Server.sys.role.createRole(req.locals.data.name, req.locals.data.display);
-    res.status(201).end();
+    const id = await Server.sys.software.create(data);
+    res.status(201).end(id);
 }));
 
 // Delete software by ID
 router.delete('/:id', [
     middleware.authentication,
-//    middleware.authorization({ role: 'admin' }),
-    check('name').isLength({ min: 3, max: 32 }),
+    middleware.authorization({ role: 'admin' }),
+    check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    Server.logger.info('Deleting software %s', data.name);
-    Server.sys.software.delete(data.name);
+    Server.logger.info('- software %s', data.id);
+    Server.sys.software.delete(data.id);
     res.status(200).end();
 }));
 

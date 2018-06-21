@@ -13,6 +13,8 @@ module.exports = {
         const errors = validationResult(req);
         if (!errors.isEmpty())
             throw new Server.errors.UnprocessableEntity(errors.array());
+        if (req.locals == null)
+            req.locals = {};
         req.locals.data = matchedData(req);
         next();
     }

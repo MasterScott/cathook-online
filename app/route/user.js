@@ -67,7 +67,7 @@ router.post('/id/:name/role/:id', [
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    Server.sys.user.addRole(data.name, data.id);
+    await Server.sys.user.addRole(data.name, data.id);
     res.status(200).end();
 }));
 
@@ -80,7 +80,7 @@ router.delete('/id/:name/role/:id', [
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    Server.sys.user.removeRole(data.name, data.id);
+    await Server.sys.user.removeRole(data.name, data.id);
     res.status(200).end();
 }));
 
