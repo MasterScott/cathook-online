@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>cathook</title>
+        <script src="js/basic.js"></script>
+    </head>
+    <body>
+        <h1>cathook</h1>
+        <p>Username: <span id="username"></span></p>
+        <p>Roles: </p>
+        <p>Custom color: <p id="color"></p></p>
+        <ul id="roles"></ul>
+        <input type="button" id="generate" value="Generate invite">
+        <p>Invites:</p>
+        <ul id="invites"></ul>
+        <p id="status"></p>
+        <script>
+const list = document.getElementById('invites');
+async function refreshInviteList()
+{
+    try {
+        const invites = await request.get(`${host}/invite?key=${localStorage.api_key}`);
+        const data = JSON.parse(invites.responseText);
+        list.innerHTML = '';
+        for (i of data)
+        {
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode(i.key));
+            list.appendChild(li);
+        }
+    } catch (e) {
+        document.getElementById('status').innerHTML = `Error: ${e.status} - ${e.responseText}`;
+    }
+}
+
+document.getElementById('generate').addEventListener('click', async () => {
+    try {
+        const xhr = await request.post(`${host}/invite?key=${localStorage.api_key}`);
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(xhr.responseText));
+        list.appendChild(li);
+    } catch (e) {
+        document.getElementById('status').innerHTML = `Error: ${e.status} - ${e.responseText}`;
+    }
+});
+
+refreshInviteList();
+        </script>
+    </body>
+</html>

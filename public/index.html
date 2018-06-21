@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>cathook</title>
+        <script src="js/basic.js"></script>
+        <script src="js/sha256.min.js"></script>
+    </head>
+    <body>
+        <h1>Welcome to cathook</h1>
+        <ul>
+            <li><a href="register.html">Register</a></li>
+        </ul>
+        <table>
+            <tr><td><input type="text" id="username" placeholder="Username"></td></tr>
+            <tr><td><input type="password" id="password" placeholder="Password"></td></tr>
+            <tr><td><input type="button" id="login" value="Login"></td></tr>
+        </table>
+        <p id="status"></p>
+        <a href="main.html">User page</a>
+        <script>
+const usernameRegex = /^[0-9_a-z\-]{3,32}$/i;
+
+document.getElementById('login').addEventListener('click', async () => {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    if (!usernameRegex.test(username))
+        return;
+
+    try {
+        const key = await request.post(`${host}/user/login`, { username: username, password: sha256.hmac(passwordKey, password) });
+        localStorage.api_key = key.responseText;
+        document.getElementById('status').innerHTML = 'You are logged in, now go to your user page';
+    } catch (e) {
+        document.getElementById('status').innerHTML = `Error: ${e.status} - ${e.responseText}`
+    }
+});
+        </script>
+    </body>
+</html>
