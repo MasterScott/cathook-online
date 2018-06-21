@@ -20,26 +20,20 @@ router.post('/online', (req, res) => {
 // Set current SteamID and stuff
 router.post('/startup', [
     check('steam').matches(/^\d{1,10}$/),
-    middleware.authentication
+    middleware.authentication,
+    middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
-    const data = matchedData(req);
-    await Server.sys.game.claimSteamId(req.locals.user, data.steam);
+    await Server.sys.game.claimSteamId(req.locals.user, req.locals.data.steam);
     res.status(200).end();
 }));
 
 // Identify array of SteamIDs (separated by ,)
 router.get('/identify', [
     check('ids').matches(/^(\d{1,10},?)+$/),
-    middleware.authentication
+    middleware.authentication,
+    middleware.passedAllChecks
 ], (async function (req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
-    const data = matchedData(req);
-    const ids = data.ids.split(',');
+    const ids = req.locals.data.ids.split(',');
     const identified = await Server.sys.game.identify(ids);
     res.status(200).json(identified);
 }));

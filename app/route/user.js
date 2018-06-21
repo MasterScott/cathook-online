@@ -21,13 +21,10 @@ router.post('/register', [
     check('username').matches(usernameRegex).withMessage('Username must be between 3 and 32 characters long, allowed characters: 0-9, a-z, _ and -'),
     check('password').matches(passwordRegex),
     check('invite').isLength({ max: 255 }),
-    check('mail').isLength({ max: 255 }).isEmail()
+    check('mail').isLength({ max: 255 }).isEmail(),
+    middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
-    const data = matchedData(req);
-    const key = await Server.sys.user.register(data);
+    const key = await Server.sys.user.register(req.locals.data);
     res.status(201).end(key);
 }));
 
@@ -38,13 +35,10 @@ router.get('/id/:name', (req, res) => {
 
 // Get user by Steam ID
 router.get('/steam/:steam', [
-    check('steam').matches(/^\d{1,10}$/)
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
-    const data = matchedData(req);
-    const user = await Server.db.getUserBySteamId(data.steam);
+    const user = await Server.db.getUserBySteamId(req.locals.data.steam);
     if (user)
         res.status(200).json(Server.sys.user.info(user));
     else
@@ -54,13 +48,10 @@ router.get('/steam/:steam', [
 // Return access key
 router.post('/login', [
     check('username').matches(usernameRegex),
-    check('password').matches(passwordRegex)
+    check('password').matches(passwordRegex),
+    middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        throw new Server.errors.UnprocessableEntity({ errors: errors.array() });
-    const data = matchedData(req);
-    const key = await Server.sys.user.login(data.username, data.password);
+    const key = await Server.sys.user.login(req.locals.data.username, req.locals.data.password);
     if (key == null)
         throw new Server.errors.InternalServerError();
     else
