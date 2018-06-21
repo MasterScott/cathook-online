@@ -72,7 +72,6 @@ class DbInterface
 
     async claimSteamId(steamId, userId)
     {
-        console.log(steamId, userId);
         await this.client.query('INSERT INTO steamid ("user", steam3) VALUES ($1, $2)', [userId, steamId]);
     }
 
@@ -96,6 +95,33 @@ class DbInterface
         if (result.rowCount !== 1)
             return null;
         return result.rows[0];
+    }
+
+    async getRoles(userId)
+    {
+        const result = await this.client.query('SELECT * FROM roles INNER JOIN userroles ON userroles.role = roles.id WHERE userroles."user" = $1', [userId]);
+        return result.rows;
+    }
+
+    async checkRoleExists(name)
+    {
+        const result = await this.client.query('SELECT 1 FROM roles WHERE name = $1 LIMIT 1', [name]);
+        return result.rowCount != 0;
+    }
+
+    async createRole(name, display)
+    {
+        await this.client.query('INSERT INTO roles (name, ingame) VALUES ($1, $2)', [name, display]);
+    }
+
+    async deleteRoleAndUserRoles(name)
+    {
+        const result = await this.client.query('DELETE FROM roles WHERE name = $1 RETURNING id LIMIT 1', [name]);
+        if (result.rowCount == 0)
+            return false;
+        const id = result.rows[0].id;
+        await this.client.query('DELETE FROM userroles WHERE role = $1', [id]);
+        return true;
     }
 }
 
