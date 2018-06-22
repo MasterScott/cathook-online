@@ -7,7 +7,6 @@ const Server = require('./Server');
 module.exports = {
     authentication: require('./mw/authentication'),
     authorization: require('./mw/authorization'),
-    ratelimit: require('./mw/ratelimit'),
     passedAllChecks: function (req, res, next)
     {
         const errors = validationResult(req);

@@ -4,16 +4,41 @@
         <script src="js/basic.js"></script>
     </head>
     <body>
-        <h1>cathook</h1>
-        <p>Username: <span id="username"></span></p>
-        <p>Roles: </p>
-        <p>Custom color: <p id="color"></p></p>
-        <ul id="roles"></ul>
-        <input type="button" id="generate" value="Generate invite">
-        <p>Invites:</p>
-        <ul id="invites"></ul>
+        <h1>User profile</h1>
+        <table>
+            <tr>
+                <td>Username</td>
+                <td id="username"></td>
+            </tr>
+            <tr>
+                <td>Joined at</td>
+                <td id="registered"></td>
+            </tr>
+            <tr>
+                <td>Software</td>
+                <td id="software"></td>
+            </tr>
+            <tr>
+                <td>Custom color</td>
+                <td id="color"></td>
+            </tr>
+            <tr>
+                <td>Roles</td>
+                <td id="roles"></td>
+            </tr>
+        </table>
+
+        <div class="hidden-if-not-own-profile">
+            <input type="button" id="generate" value="Generate invite">
+            <p>Your invites:</p>
+            <ul id="invites"></ul>
+        </div>
         <p id="status"></p>
         <script>
+const query = new URLSearchParams(window.location.search);
+
+console.log(query.get('name'));
+
 const list = document.getElementById('invites');
 async function refreshInviteList()
 {
