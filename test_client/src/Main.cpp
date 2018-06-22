@@ -1,7 +1,10 @@
 #include "UrlEncoding.hpp"
 #include "HttpRequest.hpp"
+#include "OnlineService.hpp"
 
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 void urlEncodingTest()
 {
@@ -51,8 +54,29 @@ void httpRequestTest()
     }
 }
 
+void onlineServiceTest()
+{
+    co::OnlineService service{};
+    service.setHost("localhost:8000");
+    service.login("6b649dee81a4e2ae733eb7cd3be460d5", [](co::IdentifiedUser user) {
+        std::cout << "Logged in as " << user.username << '\n';
+    });
+    service.setErrorHandler([](std::string error) {
+        std::cout << "API Error: " << error << '\n';
+    });
+    while (true)
+    {
+        // Somewhere in game loop
+        // Non-blocking function
+        service.processPendingCalls();
+
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1s);
+    }
+}
+
 int main()
 {
-    httpRequestTest();
+    onlineServiceTest();
     return 0;
 }

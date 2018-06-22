@@ -23,7 +23,6 @@ HttpResponse::HttpResponse(const std::vector<char>& data)
     {
         if (data[i] == '\r' && (i < data.size() - 1) && data[i + 1] == '\n')
         {
-            printf("Message %s\n", message.str().c_str());
             // \r\n\r\n, body begins
             if (message.str().empty())
             {
@@ -81,7 +80,7 @@ void HttpResponse::parseStatus(std::string message)
 }
 
 void HttpResponse::parseHeader(std::string message)
-{
+{   
     std::string key;
     std::string value;
 
@@ -143,7 +142,7 @@ std::vector<char> HttpRequest::serialize() const
 {
     std::ostringstream stream{};
 
-    stream << method << ' ' << urlEncode(address);
+    stream << method << ' ' << address;
     if (query.size())
         stream << '?' << query;
     stream << " HTTP/1.0\r\n";

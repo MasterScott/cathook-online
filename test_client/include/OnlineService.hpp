@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+
 #include "HttpRequest.hpp"
 
 namespace co
@@ -30,25 +31,15 @@ struct IdentifiedGroup
     std::unordered_map<unsigned, IdentifiedUser> users{};
 };
 
-class RunningApiCall
-{
-public:
-    using callback_type = std::function<void(HttpResponse)>();
-
-    RunningApiCall(HttpRequest request, callback_type callback);
-    bool process();
-protected:
-    bool finished{ false };
-    const callback_type callback;
-};
-
 class OnlineService
 {
 public:
-    void setHostAddress(const std::string& address);
-    void setErrorHandler(std::function<void(std::string)> handler);
+    using error_handler_type = std::function<void(std::string)>;
 
-    void login(const std::string& key, std::function<void(IdentifiedUser)> callback);
+    void setHost(std::string host);
+    void setErrorHandler(error_handler_type handler);
+
+    void login(std::string key, std::function<void(IdentifiedUser)> callback);
 
     void gameStartup(unsigned steamId);
     void userIdentify(const std::vector<unsigned>& steamIdList, std::function<void(IdentifiedGroup)> callback);
@@ -56,13 +47,20 @@ public:
 
     void processPendingCalls();
 protected:
-    void makeRequest();
+    using callback_type = std::function<void(HttpResponse&)>;
+    using pair_type = std::pair<NonBlockingHttpRequest, callback_type>;
+ 
+    void makeRequest(HttpRequest rq, callback_type callback);
+    void error(std::string message);
+
+    std::string host_address{};
+    int host_port{};
 
     bool loggedIn{ false };
-    std::string apiKey{};
+    std::string api_key{};
 
-    std::vector<std::unique_ptr<RunningApiCall>> pendingCalls{};
-    std::function<void(std::string)> errorHandler{ nullptr };
+    std::vector<pair_type> pendingCalls{};
+    error_handler_type error_handler{ nullptr };
 };
 
 }
