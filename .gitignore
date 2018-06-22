@@ -1,3 +1,5 @@
 node_modules
 config.js
 dev
+test_client/build
+.vscode
