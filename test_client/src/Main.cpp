@@ -1,4 +1,5 @@
 #include "UrlEncoding.hpp"
+#include "HttpRequest.hpp"
 
 #include <iostream>
 
@@ -11,8 +12,47 @@ void urlEncodingTest()
     std::cout << co::urlDecode("Testing+string+with+spaces") << '\n';
 }
 
+void queryStringTest()
+{
+    std::cout << "QUERYSTRING TEST\n";
+
+    co::UrlEncodedBody body{};
+    body.add("test", "testing");
+    //body.add("testing key", "! TESTING VALUE ***");
+    body.add("=", "&");
+    std::cout << std::string(body) << '\n';
+}
+
+void requestSerializeTest()
+{
+    std::cout << "HTTP REQUEST PARSING TEST\n";    
+    co::HttpRequest rq("POST", "localhost", 8000, "/testing url", "E=E");
+    rq.addHeader("Content-Type", "application/json");
+    rq.setBody("{\"test\":true}");
+    auto vec = rq.serialize();
+    std::cout << std::string(vec.begin(), vec.end()) << '\n';
+}
+
+void httpRequestTest()
+{
+    std::cout << "HTTP REQUEST/RESPONSE TEST\n";
+
+    co::HttpRequest rq("GET", "nullifiedcat.xyz", 80, "/", "");
+    co::NonBlockingHttpRequest nrq(rq);
+    try {
+        nrq.send();
+        while (!nrq.update());
+        auto response = nrq.getResponse();
+        std::cout << "Got response: " << response.getStatus() << "\n" << response.getBody() << "\n";
+        std::cout << "Date: " << response.getHeader("Date") << '\n';
+    } catch (std::exception& e)
+    {
+        std::cout << "Error: " << e.what() << "\n";
+    }
+}
+
 int main()
 {
-    urlEncodingTest();
+    httpRequestTest();
     return 0;
 }

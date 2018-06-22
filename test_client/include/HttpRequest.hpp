@@ -14,10 +14,13 @@ public:
 
     std::string getHeader(const std::string& key) const;
     int getStatus() const;
+    std::string getBody() const;
 protected:
-    void parseHeader(std::string line);
+    void parseStatus(std::string message);
+    void parseHeader(std::string message);
 
     int status{};
+    bool got_status{ false };
     std::unordered_map<std::string, std::string> headers{};
     std::string body{};
 };
@@ -25,7 +28,7 @@ protected:
 class UrlEncodedBody
 {
 public:
-    void add(const std::string& key, const std::string value);
+    void add(const std::string& key, const std::string& value);
     operator std::string() const;
 protected:
     std::vector<std::pair<std::string, std::string>> pairs{};
@@ -34,19 +37,20 @@ protected:
 class HttpRequest
 {
 public:
-    HttpRequest(const std::string& method, const std::string& host, int port, const std::string& address, UrlEncodedBody query);
+    HttpRequest(std::string method, std::string host, int port, std::string path, std::string query);
 
     void addHeader(const std::string& key, const std::string& value);
     void setBody(const std::string& body);
 
-    const std::vector<char>& serialize();
+    std::vector<char> serialize() const;
 
     const std::string method;
     const std::string host;
     const int port;
     const std::string address;
+    const std::string query;
 protected:
-    std::vector<std::pair<std::string, std::string>> headers{};
+    std::unordered_map<std::string, std::string> headers{};
     std::string body{};
 };
 
@@ -60,7 +64,12 @@ public:
 
     HttpResponse getResponse();
 protected:
-    int socket{};
+    int port;
+    std::string host;
+
+    int sock{};
+    bool finished{ false };
+    int received{ 0 };
     std::vector<char> request{};
     std::vector<char> response{};
 };
