@@ -4,7 +4,7 @@ const wrap = require('async-middleware').wrap;
 const Server = require('../Server');
 
 module.exports = function(options) {
-    let groups = options.groups;
+    let groups = options ? options.groups : null;
     if (groups == null)
         groups = ['admin'];
     else

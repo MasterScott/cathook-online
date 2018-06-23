@@ -113,7 +113,7 @@ class DbInterface
             `SELECT 1 FROM usergroups 
             INNER JOIN groups ON groups.id = usergroups.group_id 
             INNER JOIN users ON users.id = usergroups.user_id 
-            WHERE groups.name IN ($1) AND users.username = $2`, groups, username);
+            WHERE groups.name IN ($1) AND users.username = $2`, [groups, username]);
         return !!result.rowCount;
     }
 

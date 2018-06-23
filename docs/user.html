@@ -2,6 +2,7 @@
     <head>
         <title>cathook</title>
         <script src="js/basic.js"></script>
+        <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
         <h1>User profile</h1>
@@ -23,6 +24,20 @@
                 <td id="color"></td>
             </tr>
         </table>
+
+        <!-- Change software -->
+        <div class="hidden show-own">
+            <span>Change software: </span>
+            <select id="software-select"></select>
+            <input id="software-change" type="button" value="Change">
+        </div>
+        <!-- Change color -->
+        <div class="hidden show-own">
+            <span>Change color: </span>
+            <input id="color-input" type="text" placeholder="ff0000" maxlength="6">
+            <input id="color-change" type="button" value="Change">
+            <span id="color-preview">E</span>
+        </div>
 
         <div class="hidden show-own">
             <p>To use cathook online features, you will need your API key. After you launch cathook, type "cat_online_login &lt;KEY&gt;" in console.</p>
@@ -52,9 +67,6 @@
             <a href="#" id="navigate-steam-back">&lt;</a>
             <input type="text" id="navigate-steam-input">
             <a href="#" id="navigate-steam-forward">&gt;</a>
-        </div>
-        <div>
-
         </div>
 
         <p id="status"></p>

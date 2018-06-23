@@ -31,9 +31,31 @@ router.post('/register', [
 }));
 
 // Get user info
-router.get('/id/:name', (req, res) => {
-    throw new Server.errors.NotImplemented();
-});
+router.get('/id/:name', [
+    check('name').matches(usernameRegex),
+    middleware.passedAllChecks,
+    middleware.authentication
+], wrap(async function(req, res) {
+    const user = await Server.db.getUserByUsername(req.locals.data.name);
+    
+    const sw = await Server.sys.software.getSoftware(user.software_id);
+    const groups = await Server.sys.user.getGroups(req.locals.data.name);
+
+    const result = {
+        username: user.username,
+        registered_at: user.registered_at,
+        software: sw ? sw.name : null,
+        color: user.color,
+        groups: groups.map(group => {
+            return {
+                name: group.name,
+                display: group.display
+            }
+        })
+    };
+
+    res.status(200).json(result);
+}));
 
 // Get user by Steam ID
 router.get('/steam/:steam', [
