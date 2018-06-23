@@ -79,7 +79,7 @@ const list = document.getElementById('invites');
 async function refreshInviteList()
 {
     try {
-        const invites = await request.get(`${host}/invite?key=${localStorage.api_key}`);
+        const invites = await request.get('/invite');
         const data = JSON.parse(invites.responseText);
         list.innerHTML = '';
         for (i of data)
@@ -103,6 +103,9 @@ document.getElementById('generate').addEventListener('click', async () => {
         document.getElementById('status').innerHTML = `Error: ${e.status} - ${e.responseText}`;
     }
 });
+
+fillSoftwareSelect(document.getElementById('software-select'));
+fillGroupSelect(document.getElementById('group-select'));
 
 refreshInviteList();
         </script>
