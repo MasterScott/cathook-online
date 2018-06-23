@@ -35,10 +35,10 @@ router.get('/identify', [
             username: i.user.username,
             verified: i.user.verified,
             color: i.user.color,
-            roles: i.roles.map(role => {
+            groups: i.groups.map(group => {
                 return {
-                    name: role.name,
-                    display: role.display
+                    name: group.name,
+                    display: group.display
                 }
             }),
             software: i.software == null ? null : {

@@ -7,11 +7,11 @@ module.exports = function(options) {
     return wrap(async function(req, res, next) {
         if (!req.locals.user)
             throw new Server.errors.InternalServerError('Authorization before authentication');
-        const roleId = await Server.sys.role.getId(options.role);
+        const groupId = await Server.sys.group.getId(options.group);
         const userId = await Server.db.getUserId(req.locals.user.username);
-        const s = await Server.sys.user.hasRole(userId, roleId);
+        const s = await Server.sys.user.hasGroup(userId, groupId);
         if (!s)
-            throw new Server.errors.Forbidden(`You need role ${options.role} for that action`);
+            throw new Server.errors.Forbidden(`You need group ${options.group} for that action`);
         next();
     });
 }

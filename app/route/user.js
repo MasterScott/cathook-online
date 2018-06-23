@@ -41,16 +41,16 @@ router.get('/steam/:steam', [
     const user = await Server.db.getUserBySteamId(req.locals.data.steam);
     if (user)
     {
-        const roles = await Server.sys.user.getRoles(user.username);
+        const groups = await Server.sys.user.getGroups(user.username);
         const software = await Server.sys.software.getSoftware(user.software_id);
         res.status(200).json({
             username: user.username,
             verified: user.verified,
             color: user.color,
-            roles: roles.map(role => {
+            groups: groups.map(group => {
                 return {
-                    name: role.name,
-                    display: role.display
+                    name: group.name,
+                    display: group.display
                 }
             }),
             software: software == null ? null : {
@@ -76,31 +76,31 @@ router.post('/login', [
         res.status(200).end(key);
 }));
 
-// Add user role
-router.post('/id/:name/role/:id', [
+// Add user group
+router.post('/id/:name/group/:id', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'admin' }),
+    middleware.authorization({ group: 'admin' }),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    await Server.sys.user.addRole(data.name, data.id);
+    await Server.sys.user.addGroup(data.name, data.id);
     res.status(200).end();
 }));
 
-// Remove role
-router.delete('/id/:name/role/:id', [
+// Remove group
+router.delete('/id/:name/group/:id', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'admin' }),
+    middleware.authorization({ group: 'admin' }),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    await Server.sys.user.removeRole(data.name, data.id);
+    await Server.sys.user.removeGroup(data.name, data.id);
     res.status(200).end();
 }));
 
@@ -119,7 +119,7 @@ router.put('/id/:name/software/:id', [
 router.put('/id/:name/color/:color', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'color' }),
+    middleware.authorization({ group: 'color' }),
     check('name').matches(usernameRegex),
     check('color').matches(/^[0-9a-f]{6}$/),
     middleware.passedAllChecks

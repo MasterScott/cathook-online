@@ -105,74 +105,84 @@ class DbInterface
         return result.rows[0].id;
     }
 
-    /* USER-ROLE */
+    /* USER-GROUP */
 
-    async checkUserRole(userId, roleId)
+    async checkAnyOfGroups(username, groups)
     {
-        const result = await this.client.query('SELECT 1 FROM userroles WHERE user_id = $1 AND role_id = $2 LIMIT 1', [userId, roleId]);
+        const result = await this.client.query(
+            `SELECT 1 FROM usergroups 
+            INNER JOIN groups ON groups.id = usergroups.group_id 
+            INNER JOIN users ON users.id = usergroups.user_id 
+            WHERE groups.name IN ($1) AND users.username = $2`, groups, username);
         return !!result.rowCount;
     }
 
-    async addUserRole(userId, roleId)
+    async checkUserGroup(userId, groupId)
     {
-        await this.client.query('INSERT INTO userroles (user_id, role_id) VALUES ($1, $2)', [userId, roleId]);
-    }
-
-    async deleteUserRole(userId, roleId)
-    {
-        const result = await this.client.query('DELETE FROM userroles WHERE user_id = $1 AND role_id = $2', [userId, roleId]);
+        const result = await this.client.query('SELECT 1 FROM usergroups WHERE user_id = $1 AND group_id = $2 LIMIT 1', [userId, groupId]);
         return !!result.rowCount;
     }
 
-    async getUserRoles(userId)
+    async addUserGroup(userId, groupId)
     {
-        const result = await this.client.query('SELECT * FROM roles INNER JOIN userroles ON userroles.role_id = roles.id WHERE userroles.user_id = $1', [userId]);
+        await this.client.query('INSERT INTO usergroups (user_id, group_id) VALUES ($1, $2)', [userId, groupId]);
+    }
+
+    async deleteUserGroup(userId, groupId)
+    {
+        const result = await this.client.query('DELETE FROM usergroups WHERE user_id = $1 AND group_id = $2', [userId, groupId]);
+        return !!result.rowCount;
+    }
+
+    async getUserGroups(userId)
+    {
+        const result = await this.client.query('SELECT * FROM groups INNER JOIN usergroups ON usergroups.group_id = groups.id WHERE usergroups.user_id = $1', [userId]);
         return result.rows;
     }
 
-    /* ROLE */
+    /* group */
 
-    async checkRoleExists(name)
+    async checkGroupExists(name)
     {
-        const result = await this.client.query('SELECT 1 FROM roles WHERE name = $1 LIMIT 1', [name]);
+        const result = await this.client.query('SELECT 1 FROM groups WHERE name = $1 LIMIT 1', [name]);
         return !!result.rowCount;
     }
 
-    async checkRoleIdExists(id)
+    async checkGroupIdExists(id)
     {
-        const result = await this.client.query('SELECT 1 FROM roles WHERE id = $1 LIMIT 1', [id]);
+        const result = await this.client.query('SELECT 1 FROM groups WHERE id = $1 LIMIT 1', [id]);
         return !!result.rowCount;
     }
 
-    async createRole(name, display)
+    async createGroup(name, display)
     {
-        const result = await this.client.query('INSERT INTO roles (name, display) VALUES ($1, $2) RETURNING id', [name, display]);
+        const result = await this.client.query('INSERT INTO groups (name, display) VALUES ($1, $2) RETURNING id', [name, display]);
         if (!result.rowCount)
             return null;
         return result.rows[0].id;
     }
 
-    async deleteRole(id)
+    async deleteGroup(id)
     {
-        const result = await this.client.query('DELETE FROM roles WHERE name = $1', [id]);
+        const result = await this.client.query('DELETE FROM groups WHERE name = $1', [id]);
         return !!result.rowCount;
     }
 
-    async getAllRoles()
+    async getAllGroups()
     {
-        const result = await this.client.query('SELECT * FROM roles');
+        const result = await this.client.query('SELECT * FROM groups');
         return result.rows;
     }
 
-    async getRole(id)
+    async getGroup(id)
     {
-        const result = await this.client.query('SELECT * FROM roles WHERE id = $1 LIMIT 1', [id]);
+        const result = await this.client.query('SELECT * FROM groups WHERE id = $1 LIMIT 1', [id]);
         return result[0];
     }
 
-    async getRoleId(name)
+    async getGroupId(name)
     {
-        const result = await this.client.query('SELECT id FROM roles WHERE name = $1 LIMIT 1', [name]);
+        const result = await this.client.query('SELECT id FROM groups WHERE name = $1 LIMIT 1', [name]);
         if (result.rowCount !== 1)
             return null;
         return result.rows[0].id;

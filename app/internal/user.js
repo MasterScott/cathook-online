@@ -36,38 +36,38 @@ module.exports = {
             color: raw.color
         }
     },
-    hasRole: async function hasRole(userId, roleId)
+    hasGroup: async function hasGroup(userId, groupId)
     {
-        const roleExists = await Server.db.checkRoleIdExists(roleId);
-        if (!roleExists)
-        throw new Server.errors.NotFound('Role does not exist');
-        return await Server.db.checkUserRole(userId, roleId);
+        const groupExists = await Server.db.checkGroupIdExists(groupId);
+        if (!groupExists)
+        throw new Server.errors.NotFound('Group does not exist');
+        return await Server.db.checkUserGroup(userId, groupId);
     },
-    addRole: async function addRole(username, roleId)
+    addGroup: async function addGroup(username, groupId)
     {
         const userId = await Server.db.getUserId(username);
-        const roleExists = await Server.db.checkRoleIdExists(roleId);
-        if (!roleExists)
-            throw new Server.errors.NotFound('Role does not exist');
-        const has = await this.hasRole(userId, roleId);
+        const groupExists = await Server.db.checkGroupIdExists(groupId);
+        if (!groupExists)
+            throw new Server.errors.NotFound('Group does not exist');
+        const has = await this.hasGroup(userId, groupId);
         if (has)
-            throw new Server.errors.Conflict('User already has role');
-        Server.db.addUserRole(userId, roleId);    
+            throw new Server.errors.Conflict('User already has group');
+        Server.db.addUserGroup(userId, groupId);    
     },
-    removeRole: async function removeRole(username, roleId)
+    removeGroup: async function removeGroup(username, groupId)
     {
-        const roleExists = await Server.db.checkRoleIdExists(roleId);
-        if (!roleExists)
-            throw new Server.errors.NotFound('Role does not exist');
+        const groupExists = await Server.db.checkGroupIdExists(groupId);
+        if (!groupExists)
+            throw new Server.errors.NotFound('Group does not exist');
         const userId = await Server.db.getUserId(username);
-        const had = await Server.db.deleteUserRole(userId, roleId);
+        const had = await Server.db.deleteUserGroup(userId, groupId);
         if (!had)
-            throw new Server.errors.NotFound('User does not have role');
+            throw new Server.errors.NotFound('User does not have group');
     },
-    getRoles: async function getRoles(username) 
+    getGroups: async function getGroups(username) 
     {
         const userId = await Server.db.getUserId(username);
-        const roles = await Server.db.getUserRoles(userId);
-        return roles;
+        const groups = await Server.db.getUserGroups(userId);
+        return groups;
     }
 };

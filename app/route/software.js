@@ -11,7 +11,7 @@ const middleware = require('../middleware');
 router.post('/', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'admin' }),
+    middleware.authorization({ group: 'admin' }),
     check('name').isLength({ min: 3, max: 32 }),
     check('developers').isLength({ max: 255 }),
     check('url').optional().isLength({ max: 255 }).isURL(),
@@ -27,7 +27,7 @@ router.post('/', [
 router.delete('/:id', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'admin' }),
+    middleware.authorization({ group: 'admin' }),
     check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {

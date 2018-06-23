@@ -28,7 +28,7 @@ module.exports = {
         {
             data[i] = {
                 user: data[i],
-                roles: await Server.sys.user.getRoles(data[i].username),
+                groups: await Server.sys.user.getGroups(data[i].username),
                 software: await Server.sys.software.getSoftware(data[i].software_id)
             }
         }

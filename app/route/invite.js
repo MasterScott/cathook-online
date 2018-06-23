@@ -11,7 +11,7 @@ const middleware = require('../middleware');
 router.post('/', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ role: 'invite' })
+    middleware.authorization({ group: 'invite' })
 ], wrap(async function(req, res) {
     const key = await Server.sys.invite.createInvite(req.locals.user);
     res.status(201).end(key);
