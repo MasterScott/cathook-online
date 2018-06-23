@@ -40,7 +40,25 @@ router.get('/steam/:steam', [
 ], wrap(async function(req, res) {
     const user = await Server.db.getUserBySteamId(req.locals.data.steam);
     if (user)
-        res.status(200).json(Server.sys.user.info(user));
+    {
+        const roles = await Server.sys.user.getRoles(user.username);
+        const software = await Server.sys.software.getSoftware(user.software_id);
+        res.status(200).json({
+            username: user.username,
+            verified: user.verified,
+            color: user.color,
+            roles: roles.map(role => {
+                return {
+                    name: role.name,
+                    display: role.display
+                }
+            }),
+            software: software == null ? null : {
+                name: software.name,
+                friendly: software.friendly
+            }
+        });
+    }
     else
         throw new Server.errors.NotFound();
 }));
@@ -104,7 +122,6 @@ router.put('/id/:name/color/:color', [
 ], wrap(async function(req, res) {
     throw new Server.errors.NotImplemented();
 }));
-
 
 // Generate new access key
 router.post('/reset_key', (req, res) => {

@@ -4,8 +4,10 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <optional>
 
 #include "HttpRequest.hpp"
+#include "json.hpp"
 
 namespace co
 {
@@ -16,31 +18,52 @@ enum class ApiCallResult
     BAD_REQUEST,
     UNAUTHORIZED,
     FORBIDDEN,
+    NOT_FOUND,
     CONFLICT,
     TOO_MANY_REQUESTS,
     SERVER_ERROR,
     UNKNOWN
 };
 
-struct Role
+struct role
 {
-    std::string name{};
-    std::string display_name{};
+    role(const nlohmann::json&);
+
+    std::string name;
+    std::optional<std::string> display_name;
 };
 
-struct IdentifiedUser
+struct software
 {
-    std::string username{};
-    bool has_color;
-    int r;
-    int g;
-    int b;
-    std::vector<Role> roles{};
+    software(const nlohmann::json&);
+
+    std::string name;
+    bool friendly;
 };
 
-struct IdentifiedGroup
+struct identified_user
 {
-    std::unordered_map<unsigned, IdentifiedUser> users{};
+    identified_user(const nlohmann::json&);
+
+    std::string username;
+    bool steamid_verified;
+    std::optional<std::string> color;
+    std::vector<role> roles;
+    std::optional<software> uses_software;
+};
+
+struct identified_group
+{
+    identified_group(const nlohmann::json&);
+
+    std::unordered_map<unsigned, identified_user> users{};
+};
+
+struct logged_in_user
+{
+    logged_in_user(const nlohmann::json&);
+
+    std::string username;
 };
 
 class OnlineService
@@ -51,17 +74,18 @@ public:
     void setHost(std::string host);
     void setErrorHandler(error_handler_type handler);
 
-    void login(std::string key, std::function<void(ApiCallResult, std::optional<IdentifiedUser>)> callback);
+    void login(std::string key, std::function<void(ApiCallResult, std::optional<logged_in_user>)> callback);
 
     void gameStartup(unsigned steamId);
-    void userIdentify(const std::vector<unsigned>& steamIdList, std::function<void(ApiCallResult, std::optional<IdentifiedGroup>)> callback);
+    void userIdentify(const std::vector<unsigned>& steamIdList, std::function<void(ApiCallResult, std::optional<identified_group>)> callback);
 
     void processPendingCalls();
 protected:
-    using callback_type = std::function<void(HttpResponse&)>;
+    using callback_type = std::function<void(ApiCallResult, HttpResponse&)>;
     using pair_type = std::pair<NonBlockingHttpRequest, callback_type>;
  
     void makeRequest(HttpRequest rq, callback_type callback);
+    static ApiCallResult resultFromStatus(int status);
     void error(std::string message);
 
     std::string host_address{};
