@@ -10,7 +10,8 @@ const middleware = require('../middleware');
 // Create new software
 router.post('/', [
     middleware.authentication,
-//    middleware.authorization({ role: 'admin' }),
+    middleware.notAnonymous,
+    middleware.authorization({ role: 'admin' }),
     check('name').isLength({ min: 3, max: 32 }),
     check('developers').isLength({ max: 255 }),
     check('url').optional().isLength({ max: 255 }).isURL(),
@@ -25,6 +26,7 @@ router.post('/', [
 // Delete software by ID
 router.delete('/:id', [
     middleware.authentication,
+    middleware.notAnonymous,
     middleware.authorization({ role: 'admin' }),
     check('id').isNumeric(),
     middleware.passedAllChecks

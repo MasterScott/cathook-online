@@ -16,5 +16,12 @@ module.exports = {
             req.locals = {};
         req.locals.data = matchedData(req);
         next();
+    },
+    // Must be called after authentication
+    notAnonymous: function (req, res, next)
+    {
+        if (req.locals.anonymous)
+            throw new Server.errors.Forbidden('Anonymous accounts cannot access this API');
+        next();
     }
 }

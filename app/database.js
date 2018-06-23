@@ -209,7 +209,7 @@ class DbInterface
     async getSoftware(id)
     {
         const result = await this.client.query('SELECT * FROM software WHERE id = $1 LIMIT 1', [id]);
-        return result[0];
+        return result.rows[0];
     }
 
     async getSoftwareId(name)

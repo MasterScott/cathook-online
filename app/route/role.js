@@ -12,6 +12,7 @@ const nameRegex = /^[0-9a-z_]{1,32}$/;
 // Create a new role
 router.post('/', [
     middleware.authentication,
+    middleware.notAnonymous,
     check('name').matches(nameRegex),
     check('display').optional().isLength({ min: 3, max: 32 }),
     middleware.authorization({ role: 'admin' }),
@@ -26,6 +27,7 @@ router.post('/', [
 // Delete role by id
 router.delete('/:id', [
     middleware.authentication,
+    middleware.notAnonymous,
     check('id').isNumeric(),
     middleware.authorization({ role: 'admin' }),
     middleware.passedAllChecks

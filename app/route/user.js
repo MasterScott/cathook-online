@@ -79,6 +79,7 @@ router.post('/login', [
 // Add user role
 router.post('/id/:name/role/:id', [
     middleware.authentication,
+    middleware.notAnonymous,
     middleware.authorization({ role: 'admin' }),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
@@ -92,6 +93,7 @@ router.post('/id/:name/role/:id', [
 // Remove role
 router.delete('/id/:name/role/:id', [
     middleware.authentication,
+    middleware.notAnonymous,
     middleware.authorization({ role: 'admin' }),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
@@ -105,6 +107,7 @@ router.delete('/id/:name/role/:id', [
 // Update software
 router.put('/id/:name/software/:id', [
     middleware.authentication,
+    middleware.notAnonymous,
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
     middleware.passedAllChecks
@@ -115,12 +118,21 @@ router.put('/id/:name/software/:id', [
 // Update color
 router.put('/id/:name/color/:color', [
     middleware.authentication,
+    middleware.notAnonymous,
     middleware.authorization({ role: 'color' }),
     check('name').matches(usernameRegex),
     check('color').matches(/^[0-9a-f]{6}$/),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     throw new Server.errors.NotImplemented();
+}));
+
+// Verify SteamID
+router.put('/id/:name/verify/:steam', [
+    middleware.authentication,
+    middleware.notAnonymous,
+], wrap(async function(req, res) {
+    
 }));
 
 // Generate new access key
