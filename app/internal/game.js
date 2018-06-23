@@ -15,7 +15,7 @@ module.exports = {
         {
             if (claim.user == user.id)
                 return;
-            if (!user.anonymous && claim.username == 'anonymous')
+            if (!user.anonymous && claim.username == Server.config.anonymousAccount)
                 await Server.db.reclaimSteamId(user.id, steamId);
             else
                 throw new Server.errors.Conflict();
@@ -24,15 +24,12 @@ module.exports = {
     identify: async function identify(list)
     {
         const data = await Server.db.getUsersFromSteamIDs(list);
-        console.log(data);
         for (const i in data)
         {
             data[i] = {
-                steam3: data[i].steam3,
-                verified: data[i].verified,
-                username: data[i].username,
-                color: data[i].color,
-                roles: await Server.sys.user.getRoles(data[i].username)
+                user: data[i],
+                roles: await Server.sys.user.getRoles(data[i].username),
+                software: await Server.sys.software.getSoftware(data[i].software_id)
             }
         }
         return data;

@@ -20,5 +20,12 @@ module.exports = {
         const result = await Server.db.deleteSoftware(id);
         if (!result)
             throw new Server.errors.NotFound('Software does not exist');
+    },
+    getSoftware: async function getSoftware(id)
+    {
+        if (id == null)
+            return null;
+        const result = await Server.db.getSoftware(id);
+        return result;
     }
 };

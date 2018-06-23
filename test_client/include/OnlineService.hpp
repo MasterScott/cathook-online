@@ -10,6 +10,18 @@
 namespace co
 {
 
+enum class ApiCallResult
+{
+    OK,
+    BAD_REQUEST,
+    UNAUTHORIZED,
+    FORBIDDEN,
+    CONFLICT,
+    TOO_MANY_REQUESTS,
+    SERVER_ERROR,
+    UNKNOWN
+};
+
 struct Role
 {
     std::string name{};
@@ -39,11 +51,10 @@ public:
     void setHost(std::string host);
     void setErrorHandler(error_handler_type handler);
 
-    void login(std::string key, std::function<void(IdentifiedUser)> callback);
+    void login(std::string key, std::function<void(ApiCallResult, std::optional<IdentifiedUser>)> callback);
 
     void gameStartup(unsigned steamId);
-    void userIdentify(const std::vector<unsigned>& steamIdList, std::function<void(IdentifiedGroup)> callback);
-    void userIdentify(unsigned steamId, std::function<void(unsigned, IdentifiedUser)> callback);
+    void userIdentify(const std::vector<unsigned>& steamIdList, std::function<void(ApiCallResult, std::optional<IdentifiedGroup>)> callback);
 
     void processPendingCalls();
 protected:

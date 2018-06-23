@@ -7,16 +7,6 @@ const { matchedData, sanitize } = require('express-validator/filter');
 const middleware = require('../middleware');
 const Server = require('../Server');
 
-// Store stats (kills, etc) on round end
-router.post('/store', (req, res) => {
-    throw new Server.errors.NotImplemented();
-});
-
-// Keep the user online/ingame/etc status
-router.post('/online', (req, res) => {
-    throw new Server.errors.NotImplemented();
-});
-
 // Set current SteamID and stuff
 router.post('/startup', [
     check('steam').matches(/^\d{1,10}$/),
@@ -34,8 +24,40 @@ router.get('/identify', [
     middleware.passedAllChecks
 ], (async function (req, res) {
     const ids = req.locals.data.ids.split(',');
+    if (ids.length > 32)
+        throw new Server.errors.PayloadTooLarge();
     const identified = await Server.sys.game.identify(ids);
-    res.status(200).json(identified);
+    // Only send public data
+    const result = {};
+    for (const i of identified)
+    {
+        result[i.user.steam3] = {
+            username: i.user.username,
+            verified: i.user.verified,
+            color: i.user.color,
+            roles: i.roles.map(role => {
+                return {
+                    name: role.name,
+                    display: role.display
+                }
+            }),
+            software: i.software == null ? null : {
+                name: i.software.name,
+                friendly: i.software.friendly
+            }
+        };
+    }
+    res.status(200).json(result);
 }));
+
+// Store stats (kills, etc) on round end
+router.post('/store', (req, res) => {
+    throw new Server.errors.NotImplemented();
+});
+
+// Keep the user online/ingame/etc status
+router.post('/online', (req, res) => {
+    throw new Server.errors.NotImplemented();
+});
 
 module.exports = router;
