@@ -15,11 +15,10 @@ router.post('/', [
     middleware.notAnonymous,
     check('name').matches(nameRegex),
     check('display').optional().isLength({ min: 3, max: 32 }),
-    middleware.authorization({ group: 'admin' }),
+    middleware.authorization(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    Server.logger.info('+ group %s "%s"', data.name, data.display);
     const id = await Server.sys.group.create(data);
     res.status(201).end(id);
 }));
@@ -29,11 +28,10 @@ router.delete('/:id', [
     middleware.authentication,
     middleware.notAnonymous,
     check('id').isNumeric(),
-    middleware.authorization({ group: 'admin' }),
+    middleware.authorization(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    Server.logger.info('- group %s', data.id);
     await Server.sys.group.delete(data.id);
     res.status(200).end();
 }));

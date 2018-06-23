@@ -22,17 +22,41 @@
                 <td>Custom color</td>
                 <td id="color"></td>
             </tr>
-            <tr>
-                <td>Groups</td>
-                <td id="groups"></td>
-            </tr>
         </table>
 
-        <div class="hidden-if-not-own-profile">
+        <div class="hidden show-own">
+            <p>To use cathook online features, you will need your API key. After you launch cathook, type "cat_online_login &lt;KEY&gt;" in console.</p>
+            <input id="show-api-key" value="Show your API key" type="button">
+            <p id="revealed-api-key"></p>
+        </div>
+
+        <div>
+            <div class="hidden show-admin">
+                <select id="group-select"></select>
+                <input id="group-add" value="Add to group" type="button">
+            </div>
+            <p>Groups:</p>
+            <ul id="groups"></ul>
+        </div>
+
+        <div class="hidden show-own">
+            <p>Invites:</p>
             <input type="button" id="generate" value="Generate invite">
-            <p>Your invites:</p>
             <ul id="invites"></ul>
         </div>
+
+        <div class="hidden show-own">
+            <p>Associated Steam accounts: <span id="steam-account-count"></span></p>
+            <table id="steam-account-table">
+            </table>
+            <a href="#" id="navigate-steam-back">&lt;</a>
+            <input type="text" id="navigate-steam-input">
+            <a href="#" id="navigate-steam-forward">&gt;</a>
+        </div>
+        <div>
+
+        </div>
+
         <p id="status"></p>
         <script>
 const query = new URLSearchParams(window.location.search);

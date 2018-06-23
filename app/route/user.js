@@ -12,7 +12,9 @@ const usernameRegex = /^[0-9_a-z\-]{3,32}$/i;
 const passwordRegex = /^[0-9a-f]{64}$/;
 
 // Show your own info
-router.get('/me', [ middleware.authentication ], (req, res) => {
+router.get('/me', [ 
+    middleware.authentication
+], (req, res) => {
     res.status(200).json(Server.sys.user.info(req.locals.user));
 });
 
@@ -80,7 +82,7 @@ router.post('/login', [
 router.post('/id/:name/group/:id', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ group: 'admin' }),
+    middleware.authorization(),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
     middleware.passedAllChecks
@@ -94,7 +96,7 @@ router.post('/id/:name/group/:id', [
 router.delete('/id/:name/group/:id', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ group: 'admin' }),
+    middleware.authorization(),
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
     middleware.passedAllChecks
@@ -119,7 +121,7 @@ router.put('/id/:name/software/:id', [
 router.put('/id/:name/color/:color', [
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ group: 'color' }),
+    middleware.authorization({ groups: ['color'] }),
     check('name').matches(usernameRegex),
     check('color').matches(/^[0-9a-f]{6}$/),
     middleware.passedAllChecks
@@ -127,10 +129,38 @@ router.put('/id/:name/color/:color', [
     throw new Server.errors.NotImplemented();
 }));
 
+// Get a range of SteamIDs associated with user
+router.get('/id/:name/steam/:start/:count', [
+    check('name').matches(usernameRegex),
+    check('start').isNumeric(),
+    check('count').isNumeric(),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous    
+], wrap(async function(req, res) {
+    throw new Server.errors.NotImplemented();
+}));
+
 // Verify SteamID
-router.put('/id/:name/verify/:steam', [
+router.put('/id/:name/steam/:steam/verify', [
+    check('name').matches(usernameRegex),
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
+    middleware.authorization({ groups: ['can_verify'] }),
+], wrap(async function(req, res) {
+    
+}));
+
+// Delete SteamID
+router.delete('/id/:name/steam/:steam', [
+    check('name').matches(usernameRegex),
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization({ groups: ['can_verify'] }),
 ], wrap(async function(req, res) {
     
 }));
