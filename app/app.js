@@ -16,6 +16,7 @@ module.exports = (app) => {
         max: 30
     }));
 
+    app.use(express.static('docs'));
     app.use('/game', require('./route/game'));
     app.use('/invite', require('./route/invite'));
     app.use('/user', require('./route/user'));
