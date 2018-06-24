@@ -210,7 +210,7 @@ if (own_page || is_admin)
     });
 }
 
-if (has_groups['can_verify'] || is_admin)
+if (has_groups['can_verify'] || is_admin || own_page)
 {
     let currentPage = 0;
 
