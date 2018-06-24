@@ -1,15 +1,3 @@
-﻿-- Database: cathook
-
--- DROP DATABASE cathook;
-
- CREATE DATABASE cathook
-   WITH OWNER = nullifiedcat
-        ENCODING = 'UTF8'
-        TABLESPACE = pg_default
-        LC_COLLATE = 'en_US.UTF-8'
-        LC_CTYPE = 'en_US.UTF-8'
-        CONNECTION LIMIT = -1;
-
 CREATE TABLE "users" (
 	"id" serial NOT NULL,
 	"username" VARCHAR(255) NOT NULL,
@@ -31,7 +19,8 @@ CREATE TABLE "users" (
 CREATE TABLE "steamid" (
 	"user_id" integer NOT NULL,
 	"steam3" integer NOT NULL,
-	"added_at" TIMESTAMP NOT NULL DEFAULT 'NOW()',
+	"first_used" TIMESTAMP NOT NULL DEFAULT 'NOW()',
+	"last_used" TIMESTAMP NOT NULL DEFAULT 'now()',
 	"verified" BOOLEAN NOT NULL DEFAULT 'false'
 ) WITH (
   OIDS=FALSE
@@ -116,6 +105,7 @@ ALTER TABLE "usergroups" ADD CONSTRAINT "usergroups_fk0" FOREIGN KEY ("user_id")
 ALTER TABLE "usergroups" ADD CONSTRAINT "usergroups_fk1" FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE;
 
 ALTER TABLE "invites" ADD CONSTRAINT "invites_fk0" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE CASCADE;
+
 
 INSERT INTO software (name, developers, friendly) VALUES ('cathook', 'nullifiedcat', true);
 
