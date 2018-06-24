@@ -105,14 +105,47 @@ class DbInterface
         return result.rows[0].id;
     }
 
+    async setUserColor(username, color)
+    {
+        await this.client.query('UPDATE users SET color = $1 WHERE username = $2', [color, username]);
+    }
+
     /* SteamID */
 
-    async updateSteamIdLastLogin(username, steam3)
+    async getUserSteamIdList(username, start, count)
     {
-        await this.client.query(`UPDATE steamid 
-            SET last_used = NOW() FROM steamid AS si 
-            INNER JOIN users ON users.id = si.user_id 
-            WHERE users.username = $1 AND si.steam3 = $2`, [username, steam3]);
+        const result = await this.client.query(
+            `SELECT steamid.* FROM steamid
+            INNER JOIN users ON steamid.user_id = users.id
+            WHERE users.username = $1
+            ORDER BY first_used DESC
+            LIMIT $2 OFFSET $3`, [username, count, start]);
+        return result.rows;
+    }
+
+    async updateSteamIdLastLogin(steam3)
+    {
+        await this.client.query(`UPDATE steamid SET last_used = NOW() WHERE steam3 = $1`, [steam3]);
+    }
+
+    async setSteamVerified(steamId, verified)
+    {
+        const result = await this.client.query(`UPDATE steamid SET verified = $2 WHERE steam3 = $1`, [steamId, verified]);
+        return !!result.rowCount;
+    }
+
+    async deleteSteamId(steamId)
+    {
+        const result = await this.client.query('DELETE FROM steamid WHERE steam3 = $1', [steamId]);
+        return !!result.rowCount;
+    }
+
+    async deleteSteamIdIfBelongsToUser(steamId, username)
+    {
+        const result = await this.client.query(
+            `DELETE FROM steamid 
+            WHERE steam3 = $1 AND user_id IN (SELECT users.id FROM users WHERE username = $2)`, [steamId, username]);
+        return !!result.rowCount;
     }
 
     /* USER-SOFTWARE */
@@ -163,7 +196,11 @@ class DbInterface
 
     async getUserGroups(username)
     {
-        const result = await this.client.query('SELECT * FROM groups INNER JOIN usergroups ON usergroups.group_id = groups.id WHERE usergroups.user_id = $1', [userId]);
+        const result = await this.client.query(
+            `SELECT * FROM groups 
+            INNER JOIN usergroups ON usergroups.group_id = groups.id 
+            INNER JOIN users ON users.id = usergroups.user_id
+            WHERE users.username = $1`, [username]);
         return result.rows;
     }
 
@@ -175,18 +212,9 @@ class DbInterface
         return !!result.rowCount;
     }
 
-    async checkGroupIdExists(id)
-    {
-        const result = await this.client.query('SELECT 1 FROM groups WHERE id = $1 LIMIT 1', [id]);
-        return !!result.rowCount;
-    }
-
     async createGroup(name, display)
     {
-        const result = await this.client.query('INSERT INTO groups (name, display) VALUES ($1, $2) RETURNING id', [name, display]);
-        if (!result.rowCount)
-            return null;
-        return result.rows[0].id;
+        await this.client.query('INSERT INTO groups (name, display) VALUES ($1, $2)', [name, display]);
     }
 
     async deleteGroup(id)

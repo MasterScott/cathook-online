@@ -14,7 +14,9 @@ router.post('/', [
     middleware.authorization({ groups: ['can_invite'] })
 ], wrap(async function(req, res) {
     const key = await Server.sys.invite.createInvite(req.locals.user);
-    res.status(201).end(key);
+    res.status(201).json({
+        key: key
+    });
 }));
 
 // Get all invites you generated

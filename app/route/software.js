@@ -17,10 +17,8 @@ router.post('/', [
     check('url').optional().isLength({ max: 255 }).isURL(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const data = req.locals.data;
-    Server.logger.info('Creating new software %s, by %s (%s)', data.name, data.developers, data.url);
-    const id = await Server.sys.software.create(data);
-    res.status(201).end(id);
+    await Server.sys.software.create(req.locals.data);
+    res.status(201).end();
 }));
 
 // Delete software by ID
@@ -31,9 +29,7 @@ router.delete('/:id', [
     check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const data = req.locals.data;
-    Server.logger.info('- software %s', data.id);
-    Server.sys.software.delete(data.id);
+    Server.sys.software.delete(req.locals.data.id);
     res.status(200).end();
 }));
 

@@ -14,7 +14,7 @@ module.exports = {
         else
         {
             if (claim.user == user.id) {
-                await Server.db.updateSteamIdLastLogin(user.username, steamId);
+                await Server.db.updateSteamIdLastLogin(steamId);
                 return;
             }
             if (!user.anonymous && claim.username == Server.config.anonymousAccount)
@@ -35,5 +35,29 @@ module.exports = {
             }
         }
         return data;
-    }
+    },
+    verify: async function verify(steamId)
+    {
+        const affected = await Server.db.setSteamVerified(steamId, true);
+        if (!affected)
+            throw new Server.errors.NotFound('SteamID not found');
+    },
+    unverify: async function unverify(steamId)
+    {
+        const affected = await Server.db.setSteamVerified(steamId, false);
+        if (!affected)
+            throw new Server.errors.NotFound('SteamID not found');
+    },
+    deleteSteamId: async function deleteSteamId(steamId)
+    {
+        const affected = await Server.db.deleteSteamId(steamId);
+        if (!affected)
+            throw new Server.errors.NotFound('SteamID not found');
+    },
+    deleteSteamIdIfBelongsToUser: async function deleteSteamIdIfBelongsToUser(steamId, username)
+    {
+        const affected = await Server.db.deleteSteamIdIfBelongsToUser(steamId, username);
+        if (!affected)
+            throw new Server.errors.NotFound('SteamID not found');
+    } 
 }

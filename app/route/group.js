@@ -7,39 +7,35 @@ const { matchedData, sanitize } = require('express-validator/filter');
 const Server = require('../Server');
 const middleware = require('../middleware');
 
-const nameRegex = /^[0-9a-z_]{1,32}$/;
+const groupRegex = /^[0-9a-z_]{3,32}$/;
 
 // Create a new group
 router.post('/', [
     middleware.authentication,
     middleware.notAnonymous,
-    check('name').matches(nameRegex),
+    check('name').matches(groupRegex),
     check('display').optional().isLength({ min: 3, max: 32 }),
     middleware.authorization(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const data = req.locals.data;
-    const id = await Server.sys.group.create(data);
-    res.status(201).end(id);
+    await Server.sys.group.create(req.locals.data);
+    res.status(201).end();
 }));
 
-// Delete group by id
-router.delete('/:id', [
+// Delete group by name
+router.delete('/:name', [
+    check('name').matches(groupRegex),
+    middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
-    check('id').isNumeric(),
-    middleware.authorization(),
-    middleware.passedAllChecks
+    middleware.authorization()
 ], wrap(async function(req, res) {
-    const data = req.locals.data;
-    await Server.sys.group.delete(data.id);
+    await Server.sys.group.delete(req.locals.data.name);
     res.status(200).end();
 }));
 
 // List all groups
-router.get('/', [
-    middleware.authentication
-], wrap(async function(req, res) {
+router.get('/', wrap(async function(req, res) {
     res.status(200).json(await Server.sys.group.getAllGroups());
 }));
 

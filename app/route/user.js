@@ -10,6 +10,8 @@ const Server = require('../Server');
 
 const usernameRegex = /^[0-9_a-z\-]{3,32}$/i;
 const passwordRegex = /^[0-9a-f]{64}$/;
+const groupRegex = /^[0-9a-z_]{3,32}$/;
+const colorRegex = /^[0-9a-f]{6}$/;
 
 // Show your own info
 router.get('/me', [ 
@@ -102,55 +104,65 @@ router.post('/login', [
 }));
 
 // Add user group
-router.post('/id/:name/group/:id', [
+router.post('/id/:name/group/:group', [
+    check('name').matches(usernameRegex),
+    check('group').matches(groupRegex),
+    middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization(),
-    check('name').matches(usernameRegex),
-    check('id').isNumeric(),
-    middleware.passedAllChecks
+    middleware.authorization()
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    await Server.sys.user.addGroup(data.name, data.id);
+    await Server.sys.user.addGroup(data.name, data.group);
     res.status(200).end();
 }));
 
 // Remove group
-router.delete('/id/:name/group/:id', [
+router.delete('/id/:name/group/:group', [
+    check('name').matches(usernameRegex),
+    check('group').matches(groupRegex),
+    middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization(),
-    check('name').matches(usernameRegex),
-    check('id').isNumeric(),
-    middleware.passedAllChecks
+    middleware.authorization()
 ], wrap(async function(req, res) {
     const data = req.locals.data;
-    await Server.sys.user.removeGroup(data.name, data.id);
+    await Server.sys.user.removeGroup(data.name, data.group);
     res.status(200).end();
 }));
 
 // Update software
 router.put('/id/:name/software/:id', [
-    middleware.authentication,
-    middleware.notAnonymous,
     check('name').matches(usernameRegex),
     check('id').isNumeric(),
-    middleware.passedAllChecks
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous
 ], wrap(async function(req, res) {
-    await Server.sys.user.setSoftware(req.locals.user.username, req.locals.data.id);
+    const data = req.locals.data;
+    const is_admin = await Server.sys.user.isAdmin(req.locals.user.username);
+    if (data.name != req.locals.user.username && !is_admin)
+        throw new Server.errors.Forbidden('You cannot change other user settings');
+    await Server.sys.user.setSoftware(data.name, data.id);
     res.status(200).end();
 }));
 
 // Update color
 router.put('/id/:name/color/:color', [
+    check('name').matches(usernameRegex),
+    middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
-    middleware.authorization({ groups: ['color'] }),
-    check('name').matches(usernameRegex),
-    check('color').matches(/^[0-9a-f]{6}$/),
-    middleware.passedAllChecks
+    middleware.authorization({ groups: ['color'] })
 ], wrap(async function(req, res) {
-    await Server.sys.user.setColor(req.locals.user.username, req.locals.data.color);
+    // Manually check "color" because it's special
+    const data = req.locals.data;
+    if (!(data.color === null || (typeof data.color === 'string' && data.color.match(colorRegex))))
+        throw new Server.errors.UnprocessableEntity('"color" must be either null or 6-char hex');
+    const is_admin = await Server.sys.user.isAdmin(req.locals.user.username);
+    if (data.name != req.locals.user.username && !is_admin)
+        throw new Server.errors.Forbidden('You cannot change other user settings');
+    await Server.sys.user.setColor(data.name, data.color);
     res.status(200).end();
 }));
 
@@ -163,42 +175,15 @@ router.get('/id/:name/steam/:start/:count', [
     middleware.authentication,
     middleware.notAnonymous    
 ], wrap(async function(req, res) {
-    throw new Server.errors.NotImplemented();
-}));
-
-// Verify SteamID
-router.post('/id/:name/steam/:steam/verify', [
-    check('name').matches(usernameRegex),
-    check('steam').matches(/^\d{1,10}$/),
-    middleware.passedAllChecks,
-    middleware.authentication,
-    middleware.notAnonymous,
-    middleware.authorization({ groups: ['can_verify'] }),
-], wrap(async function(req, res) {
-    throw new Server.errors.NotImplemented();
-}));
-
-// Un-verify SteamID
-router.delete('/id/:name/steam/:steam/verify', [
-    check('name').matches(usernameRegex),
-    check('steam').matches(/^\d{1,10}$/),
-    middleware.passedAllChecks,
-    middleware.authentication,
-    middleware.notAnonymous,
-    middleware.authorization({ groups: ['can_verify'] }),
-], wrap(async function(req, res) {
-    throw new Server.errors.NotImplemented();
-}));
-
-// Delete SteamID
-router.delete('/id/:name/steam/:steam', [
-    check('name').matches(usernameRegex),
-    check('steam').matches(/^\d{1,10}$/),
-    middleware.passedAllChecks,
-    middleware.authentication,
-    middleware.notAnonymous,
-    middleware.authorization({ groups: ['can_verify'] }),
-], wrap(async function(req, res) {
+    const data = req.locals.data;
+    if (data.start < 0 || data.count < 0)
+        throw new Server.errors.BadRequest('Positive numbers expected');
+    if (data.count > 50)
+        throw new Server.errors.BadRequest('count should not be more than 50');
+    const can_see = await Server.db.checkAnyOfGroups(req.locals.user.username, ['admin', 'can_verify']);
+    if (data.name != req.locals.user.username && !can_see)
+        throw new Server.errors.Forbidden();
+    const list = Server.db.getUserSteamIdList(data.name, data.start, data.count);
     throw new Server.errors.NotImplemented();
 }));
 

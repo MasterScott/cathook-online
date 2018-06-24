@@ -50,6 +50,45 @@ router.get('/identify', [
     res.status(200).json(result);
 }));
 
+// Verify SteamID
+router.post('/verify/:steam', [
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization({ groups: ['can_verify'] }),
+], wrap(async function(req, res) {
+    await Server.sys.game.verify(req.locals.data.steam);
+    res.status(200).end();
+}));
+
+// Un-verify SteamID
+router.delete('/verify/:steam', [
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization({ groups: ['can_verify'] }),
+], wrap(async function(req, res) {
+    await Server.sys.game.unverify(req.locals.data.steam);
+    res.status(200).end();
+}));
+
+// Delete SteamID
+router.delete('/steam/:steam', [
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous
+], wrap(async function(req, res) {
+    const can_always_delete = await Server.db.checkAnyOfGroups(req.locals.user.username, ['admin', 'can_verify']);
+    if (can_always_delete)
+        await Server.sys.game.deleteSteamId(req.locals.data.steam);
+    else
+        await Server.sys.game.deleteSteamIdIfBelongsToUser(req.locals.data.steam, req.locals.user.username);
+    res.status(200).end();
+}));
+
 // Store stats (kills, etc) on round end
 router.post('/store', (req, res) => {
     throw new Server.errors.NotImplemented();

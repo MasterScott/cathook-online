@@ -55,38 +55,32 @@ module.exports = {
             color: raw.color
         }
     },
-    hasGroup: async function hasGroup(userId, groupId)
+    hasGroup: async function hasGroup(username, group)
     {
-        const groupExists = await Server.db.checkGroupIdExists(groupId);
-        if (!groupExists)
-        throw new Server.errors.NotFound('Group does not exist');
-        return await Server.db.checkUserGroup(userId, groupId);
-    },
-    addGroup: async function addGroup(username, groupId)
-    {
-        const userId = await Server.db.getUserId(username);
-        const groupExists = await Server.db.checkGroupIdExists(groupId);
+        const groupExists = await Server.db.checkGroupExists(group);
         if (!groupExists)
             throw new Server.errors.NotFound('Group does not exist');
-        const has = await this.hasGroup(userId, groupId);
+        return await Server.db.checkUserGroup(username, group);
+    },
+    addGroup: async function addGroup(username, group)
+    {
+        const has = await this.hasGroup(username, group);
         if (has)
             throw new Server.errors.Conflict('User already has group');
-        Server.db.addUserGroup(userId, groupId);    
+        await Server.db.addUserGroup(username, group);    
     },
-    removeGroup: async function removeGroup(username, groupId)
+    removeGroup: async function removeGroup(username, group)
     {
-        const groupExists = await Server.db.checkGroupIdExists(groupId);
+        const groupExists = await Server.db.checkGroupExists(group);
         if (!groupExists)
             throw new Server.errors.NotFound('Group does not exist');
-        const userId = await Server.db.getUserId(username);
-        const had = await Server.db.deleteUserGroup(userId, groupId);
+        const had = await Server.db.deleteUserGroup(username, group);
         if (!had)
             throw new Server.errors.NotFound('User does not have group');
     },
     getGroups: async function getGroups(username) 
     {
-        const userId = await Server.db.getUserId(username);
-        const groups = await Server.db.getUserGroups(userId);
+        const groups = await Server.db.getUserGroups(username);
         return groups;
     },
     setSoftware: async function setSoftware(username, id)
@@ -95,5 +89,13 @@ module.exports = {
         if (!softwareExists)
             throw new Server.errors.NotFound('Software does not exist');
         await Server.db.setUserSoftware(username, id);
+    },
+    setColor: async function setColor(username, color)
+    {
+        await Server.db.setUserColor(username, color);
+    },
+    isAdmin: async function isAdmin(username)
+    {
+        return await Server.db.checkUserGroup()
     }
 };
