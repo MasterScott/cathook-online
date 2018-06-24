@@ -29,24 +29,35 @@
                 <td>Invite keys can only be used once. To get invite key, ask someone who uses cathook online for an invite key.</td>
             </tr>
             <tr>
+                <td>Software</td>
+                <td><select id="software"></select>
+                <td>Select the software you use. It most likely is cathook. Currently there is no other software that is friendly to cathook, so if you select something else, you will be shot by cathook users.</td>
+            </tr>
+            <tr>
                 <td></td>
                 <td><input type="button" id="register" value="Register"></td>
             </tr>
             <p id="error"></p>
         </table>
         <script>
+fillSoftwareSelect($('#software'));
+
 $('#register').addEventListener('click', async () => {
     const username = $('#username').value;
     const password = $('#password').value;
     const mail = $('#mail').value;
     const invite = $('#invite').value;
+    const softwareOption = $('#software').options[$('#software').selectedIndex];
+
+    const software = (softwareOption.value == "null" ? undefined : softwareOption.value);
 
     try {
-        const res = await request.post(`${host}/user/register`, {
+        const res = await request.post(`/user/register`, {
             username: username,
             password: sha256.hmac(passwordKey, password),
             mail: mail,
-            invite: invite
+            invite: invite,
+            software: software
         });
         document.getElementById('error').innerHTML = 'Registration successful';
         localStorage.api_key = res.responseText;

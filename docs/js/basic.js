@@ -116,6 +116,8 @@ function revealHidden(own_page) {
     document.querySelectorAll('.hidden').forEach((el) => {
         if (el.classList.contains('show-only-own') && !own_page)
             return;
+        if (el.classList.contains('show-if-own') && !own_page && !is_admin)
+            return;
         if (is_admin)
             return el.classList.remove('hidden');
         for (let i = 0; i < el.classList.length; ++i) {

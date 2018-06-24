@@ -37,10 +37,8 @@ router.delete('/:id', [
     res.status(200).end();
 }));
 
-// List all software
-router.get('/', [
-    middleware.authentication
-], wrap(async function(req, res) {
+// List all software (does not require auth - used in registration)
+router.get('/', wrap(async function(req, res) {
     res.status(200).json(await Server.sys.software.getAllSoftware());
 }));
 

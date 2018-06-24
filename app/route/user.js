@@ -24,6 +24,7 @@ router.post('/register', [
     check('password').matches(passwordRegex),
     check('invite').isLength({ max: 255 }),
     check('mail').isLength({ max: 255 }).isEmail(),
+    check('software').optional().isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
     const key = await Server.sys.user.register(req.locals.data);
@@ -136,7 +137,8 @@ router.put('/id/:name/software/:id', [
     check('id').isNumeric(),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    throw new Server.errors.NotImplemented();
+    await Server.sys.user.setSoftware(req.locals.user.username, req.locals.data.id);
+    res.status(200).end();
 }));
 
 // Update color
@@ -148,7 +150,8 @@ router.put('/id/:name/color/:color', [
     check('color').matches(/^[0-9a-f]{6}$/),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    throw new Server.errors.NotImplemented();
+    await Server.sys.user.setColor(req.locals.user.username, req.locals.data.color);
+    res.status(200).end();
 }));
 
 // Get a range of SteamIDs associated with user
@@ -164,7 +167,7 @@ router.get('/id/:name/steam/:start/:count', [
 }));
 
 // Verify SteamID
-router.put('/id/:name/steam/:steam/verify', [
+router.post('/id/:name/steam/:steam/verify', [
     check('name').matches(usernameRegex),
     check('steam').matches(/^\d{1,10}$/),
     middleware.passedAllChecks,
@@ -172,7 +175,19 @@ router.put('/id/:name/steam/:steam/verify', [
     middleware.notAnonymous,
     middleware.authorization({ groups: ['can_verify'] }),
 ], wrap(async function(req, res) {
-    
+    throw new Server.errors.NotImplemented();
+}));
+
+// Un-verify SteamID
+router.delete('/id/:name/steam/:steam/verify', [
+    check('name').matches(usernameRegex),
+    check('steam').matches(/^\d{1,10}$/),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization({ groups: ['can_verify'] }),
+], wrap(async function(req, res) {
+    throw new Server.errors.NotImplemented();
 }));
 
 // Delete SteamID
@@ -184,7 +199,7 @@ router.delete('/id/:name/steam/:steam', [
     middleware.notAnonymous,
     middleware.authorization({ groups: ['can_verify'] }),
 ], wrap(async function(req, res) {
-    
+    throw new Server.errors.NotImplemented();
 }));
 
 // Generate new access key

@@ -10,6 +10,12 @@ module.exports = {
         const userExists = await Server.db.checkUserExists(data.username);
         if (userExists)
             throw new Server.errors.Conflict('Username taken');
+        if (data.software != null)
+        {
+            const softwareExists = await Server.db.checkSoftwareIdExists(data.software);
+            if (!softwareExists)
+                throw new Server.errors.NotFound('Software does not exist');
+        }
         const invite = await Server.db.consumeInvite(data.invite);
         if (!invite)
             throw new Server.errors.NotFound('Invite does not exist');
@@ -17,7 +23,7 @@ module.exports = {
         const password = await bcrypt.hash(data.password, 10);
         const api_key = crypto.randomBytes(16).toString('hex');
 
-        await Server.db.storeUser(data.username, password, invite.referrer, data.mail, api_key);
+        await Server.db.storeUser(data.username, password, invite.referrer, data.mail, api_key, data.software);
     },
     login: async function login(username, password)
     {
@@ -82,5 +88,12 @@ module.exports = {
         const userId = await Server.db.getUserId(username);
         const groups = await Server.db.getUserGroups(userId);
         return groups;
+    },
+    setSoftware: async function setSoftware(username, id)
+    {
+        const softwareExists = await Server.db.checkSoftwareIdExists(id);
+        if (!softwareExists)
+            throw new Server.errors.NotFound('Software does not exist');
+        await Server.db.setUserSoftware(username, id);
     }
 };

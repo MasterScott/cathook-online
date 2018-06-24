@@ -13,10 +13,12 @@ module.exports = {
         }
         else
         {
-            if (claim.user == user.id)
+            if (claim.user == user.id) {
+                await Server.db.updateSteamIdLastLogin(user.username, steamId);
                 return;
+            }
             if (!user.anonymous && claim.username == Server.config.anonymousAccount)
-                await Server.db.reclaimSteamId(user.id, steamId);
+                await Server.db.reclaimSteamId(steamId, user.id);
             else
                 throw new Server.errors.Conflict();
         }

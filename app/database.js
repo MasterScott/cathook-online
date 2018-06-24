@@ -48,9 +48,9 @@ class DbInterface
             return null;
     }
 
-    async storeUser(username, password, referrer, mail, api_key)
+    async storeUser(username, password, referrer, mail, api_key, software_id)
     {
-        await this.client.query('INSERT INTO users (username, password_hash, referrer, mail, api_key) VALUES ($1, $2, $3, $4, $5)', [username, password, referrer, mail, api_key]);
+        await this.client.query('INSERT INTO users (username, password_hash, referrer, mail, api_key, software_id) VALUES ($1, $2, $3, $4, $5, $6)', [username, password, referrer, mail, api_key, software_id]);
     }
 
     async getUserByUsername(username)
@@ -67,7 +67,7 @@ class DbInterface
 
     async reclaimSteamId(steamId, userId)
     {
-        await this.client.query('UPDATE steamid SET "user" = $1, added_at = NOW() WHERE steam3 = $2 LIMIT 1', [userId, steamId]);
+        await this.client.query('UPDATE steamid SET user_id = $1, first_used = NOW() WHERE steam3 = $2', [userId, steamId]);
     }
 
     async claimSteamId(steamId, userId)
@@ -105,6 +105,23 @@ class DbInterface
         return result.rows[0].id;
     }
 
+    /* SteamID */
+
+    async updateSteamIdLastLogin(username, steam3)
+    {
+        await this.client.query(`UPDATE steamid 
+            SET last_used = NOW() FROM steamid AS si 
+            INNER JOIN users ON users.id = si.user_id 
+            WHERE users.username = $1 AND si.steam3 = $2`, [username, steam3]);
+    }
+
+    /* USER-SOFTWARE */
+
+    async setUserSoftware(username, software_id)
+    {
+        await this.client.query('UPDATE users SET software_id = $1 WHERE username = $2', [software_id, username]);
+    }
+
     /* USER-GROUP */
 
     async checkAnyOfGroups(username, groups)
@@ -117,24 +134,34 @@ class DbInterface
         return !!result.rowCount;
     }
 
-    async checkUserGroup(userId, groupId)
+    async checkUserGroup(username, group)
     {
-        const result = await this.client.query('SELECT 1 FROM usergroups WHERE user_id = $1 AND group_id = $2 LIMIT 1', [userId, groupId]);
+        const result = await this.client.query(
+            `SELECT 1 FROM usergroups 
+            INNER JOIN groups ON groups.id = usergroups.group_id
+            INNER JOIN users ON users.id = usergroups.user_id
+            WHERE groups.name = $1 AND users.username = $2`, [group, username]);
         return !!result.rowCount;
     }
 
-    async addUserGroup(userId, groupId)
+    async addUserGroup(username, group)
     {
-        await this.client.query('INSERT INTO usergroups (user_id, group_id) VALUES ($1, $2)', [userId, groupId]);
+        await this.client.query(
+            `INSERT INTO usergroups (group_id, user_id) VALUES(
+                (SELECT groups.id FROM groups WHERE name = $1),
+                (SELECT users.id FROM users WHERE username = $2))`, [group, username]);
     }
 
-    async deleteUserGroup(userId, groupId)
+    async deleteUserGroup(username, group)
     {
-        const result = await this.client.query('DELETE FROM usergroups WHERE user_id = $1 AND group_id = $2', [userId, groupId]);
+        const result = await this.client.query(
+            `DELETE FROM usergroups 
+            WHERE group_id IN (SELECT groups.id FROM groups WHERE name = $1) 
+            AND user_id IN (SELECT users.id FROM users WHERE username = $2)`, [group, username]);
         return !!result.rowCount;
     }
 
-    async getUserGroups(userId)
+    async getUserGroups(username)
     {
         const result = await this.client.query('SELECT * FROM groups INNER JOIN usergroups ON usergroups.group_id = groups.id WHERE usergroups.user_id = $1', [userId]);
         return result.rows;
@@ -193,6 +220,12 @@ class DbInterface
     async checkSoftwareExists(name)
     {
         const result = await this.client.query('SELECT 1 FROM software WHERE name = $1 LIMIT 1', [name]);
+        return !!result.rowCount;
+    }
+
+    async checkSoftwareIdExists(id)
+    {
+        const result = await this.client.query('SELECT 1 FROM software WHERE id = $1 LIMIT 1', [id]);
         return !!result.rowCount;
     }
 
