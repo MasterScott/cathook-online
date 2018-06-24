@@ -7,21 +7,26 @@
     </head>
     <body>
         <h1>Welcome to cathook online</h1>
-        <p class="alpha-warning">
-            This feature is currently in very early alpha testing. Server/client crashes, database resets, etc., shouldn't be a surprise for you.
-        </p>
+        <div class="alpha-warning">
+            <p>This feature is currently in very early alpha testing stage. Be prepared for client/server crashing.</p>
+            <p>I'll try to keep database resets to minimum, but there'll probably be a few.</p>
+        </div>
+        <p>Note that you don't have to register here to use cathook online. You can use "anonymous" API key (cat_online_login anonymous),
+but you won't be able to set your own username, change any of user settings or access some APIs. Also other cathook users might disable
+ignoring anonymous users in targeting settings.</p>
         <ul>
-            <li><a href="register.html">Register</a></li>
+            <li><a href="register.html">Click here to register</a></li>
         </ul>
+        <p>Login if you already have an account:</p>
         <table>
             <tr><td><input type="text" id="username" placeholder="Username"></td></tr>
             <tr><td><input type="password" id="password" placeholder="Password"></td></tr>
             <tr><td><input type="button" id="login" value="Login"></td></tr>
         </table>
-        <p id="status"></p>
-        <div class="hidden show-logged-in">
+        <div class="hidden show-after-logged-in">
             <a href="user.html">User page</a>
         </div>
+        <p id="status"></p>
         <script>
 const usernameRegex = /^[0-9_a-z\-]{3,32}$/i;
 

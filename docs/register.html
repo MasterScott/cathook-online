@@ -11,18 +11,22 @@
             <tr>
                 <td>Username</td>
                 <td><input type="text" id="username"></td>
+                <td>Other users will see it ingame. 3 to 32 characters, allowed characters: a-z, -, _</td>
             </tr>
             <tr>
                 <td>Password</td>
                 <td><input type="password" id="password"></td>
+                <td>You will only need it to login once as your API key is saved in cathook.<br/>There is no ability to change password yet.</td>
             </tr>
             <tr>
                 <td>Mail</td>
                 <td><input type="email" id="mail"></td>
+                <td>Mail is required but is not used for anything yet, later it will be used to reset password if forgotten</td>
             </tr>
             <tr>
                 <td>Invite</td>
                 <td><input type="text" id="invite"></td>
+                <td>Invite keys can only be used once. To get invite key, ask someone who uses cathook online for an invite key.</td>
             </tr>
             <tr>
                 <td></td>
@@ -30,6 +34,26 @@
             </tr>
             <p id="error"></p>
         </table>
-        <script src="js/register.js"></script>
+        <script>
+$('#register').addEventListener('click', async () => {
+    const username = $('#username').value;
+    const password = $('#password').value;
+    const mail = $('#mail').value;
+    const invite = $('#invite').value;
+
+    try {
+        const res = await request.post(`${host}/user/register`, {
+            username: username,
+            password: sha256.hmac(passwordKey, password),
+            mail: mail,
+            invite: invite
+        });
+        document.getElementById('error').innerHTML = 'Registration successful';
+        localStorage.api_key = res.responseText;
+    } catch (e) {
+        document.getElementById('error').innerHTML = 'Error: ' + e.status + ' ' + e.responseText;
+    }
+});
+        </script>
     </body>
 </html>

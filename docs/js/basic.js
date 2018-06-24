@@ -8,10 +8,18 @@ function toQueryString(object)
 
 let local_user = null;
 let api_key = null;
+let is_admin = false;
+let has_groups = {};
 
 try {
     local_user = JSON.parse(localStorage.getItem('user'));
     api_key = local_user.api_key;
+    for (const g of local_user.groups)
+    {
+        if (g.name == 'admin')
+            is_admin = true;
+        has_groups[g.name] = true;
+    }
 } catch (e) {}
 
 const request = {
@@ -86,4 +94,39 @@ function $(selector) {
 }
 function T(text) {
     return document.createTextNode(text);
+}
+function status(text) {
+    $('#status').innerHTML = '';
+    $('#status').appendChild(T(text));
+}
+
+/*
+classes used:
+- hidden
+- show-if-logged-in
+- show-if-own
+- show-if-admin
+- show-only-own
+- show-if-group-color
+- show-if-group-can_invite
+- show-if-group-can_verify
+*/
+function revealHidden(own_page) {
+    const logged_in = (local_user != null);
+    document.querySelectorAll('.hidden').forEach((el) => {
+        if (el.classList.contains('show-only-own') && !own_page)
+            return;
+        if (is_admin)
+            return el.classList.remove('hidden');
+        for (let i = 0; i < el.classList.length; ++i) {
+            const c = el.classList[i];
+            if (logged_in && (c == 'show-if-logged-in'))
+                return el.classList.remove('hidden');
+            if (c.startsWith('show-if-group-'))
+                if (has_groups[c.substr('show-if-group-'.length)])
+                    return el.classList.remove('hidden');
+            if (c.startsWith('show-if-own') && own_page)
+                return el.classList.remove('hidden');
+        }
+    });
 }
