@@ -36,7 +36,7 @@
             <span>Change color: </span>
             <input id="color-input" type="text" placeholder="ff0000" maxlength="6">
             <input id="color-change" type="button" value="Change">
-            <span id="color-preview">E</span>
+            <span id="color-preview">color preview</span>
         </div>
 
         <div class="hidden show-only-own">
@@ -69,11 +69,14 @@
             <a href="#" id="navigate-steam-forward">&gt;</a>
         </div>
 
-        <p id="status"></p>
-        <script>
+        <p id="status">Status</p>
+        <script>       
+       
 const query = new URLSearchParams(window.location.search);
 const username = query.has('name') ? query.get('name') : local_user.username;
 const own_page = (username == local_user.username);
+
+const group_select = $('#group-select');
 
 async function refreshInviteList() {
     try {
@@ -102,18 +105,62 @@ async function createInvite() {
     }
 }
 
-if (own_page) {
+if (own_page || is_admin) {
     $('#show-api-key').addEventListener('click', async () => {
         $('#revealed-api-key').innerHTML = '';
         $('#revealed-api-key').appendChild(T(api_key));
     });
     $('#generate').addEventListener('click', createInvite);
-    fillSoftwareSelect(document.getElementById('software-select'));
     refreshInviteList();
 }
 
-// if admin
-    fillGroupSelect(document.getElementById('group-select'));
+if (is_admin)
+{
+    fillGroupSelect(group_select);
+    $('#group-add').addEventListener('click', async() => {
+        const option = group_select.options[group_select.selectedIndex];
+        if (!confirm(`Are you sure you want to add user ${username} to group ${option.innerHTML}?`))
+            return;
+        await request.post(`/user/id/${username}/group/${option.innerHTML}`);
+    });
+}
+
+if (own_page || is_admin)
+{
+    fillSoftwareSelect(document.getElementById('software-select'));
+    $('#color-input').addEventListener('change', async() => {
+        $('#color-preview').style.color = '#' + $('#color-input').value;
+    });
+    $('#color-change').addEventListener('click', async() => {
+        const c = $('#color-input').value;
+        if (!(c.length == 0 || c.match(/[0-9a-f]{6}/)))
+            return alert('Color must be either empty or in hex rrggbb format');
+        if (c.length == 0)
+            await request.delete(`/user/id/${username}/color`);
+        else
+           await request.put(`/user/id/${username}/color/${c}`);
+    });
+    $('#software-change').addEventListener('click', async() => {
+        const option = $('#software-select').options[$('#software-select').selectedIndex];
+        if (option.value == 'null')
+            await request.delete(`/user/id/${username}/software`);
+        else
+           await request.put(`/user/id/${username}/software/${option.value}`);
+    });
+}
+
+if (has_groups['can_verify'] || is_admin)
+{
+    $('#navigate-steam-back').addEventListener('click', async() => {
+
+    });
+    $('#navigate-steam-forward').addEventListener('click', async() => {
+
+    });
+    $('#navigate-steam-input').addEventListener('keydown', async() => {
+
+    });
+}
 
 (async function fillUserData() {
     const dataXhr = await request.get('/user/id/' + username);
@@ -126,6 +173,20 @@ if (own_page) {
     {
         const li = document.createElement('li');
         li.appendChild(T(g.name));
+        if (is_admin)
+        {
+            const remove = document.createElement('a');
+            remove.href = '#';
+            remove.innerHTML = 'remove';
+            remove.classList.add('remove-group');
+            const gn = g.name;
+            remove.addEventListener('click', async() => {
+                if (!confirm(`Are you sure you remove group ${gn} from ${username}?`))
+                    return;
+                await request.delete(`/user/id/${username}/group/${gn}`);
+            });
+            li.appendChild(remove);
+        }
         $('#groups').appendChild(li);
     }
 })();

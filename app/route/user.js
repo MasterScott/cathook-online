@@ -147,22 +147,51 @@ router.put('/id/:name/software/:id', [
     res.status(200).end();
 }));
 
+// Delete software
+router.delete('/id/:name/software', [
+    check('name').matches(usernameRegex),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous
+], wrap(async function(req, res) {
+    const data = req.locals.data;
+    const is_admin = await Server.sys.user.isAdmin(req.locals.user.username);
+    if (data.name != req.locals.user.username && !is_admin)
+        throw new Server.errors.Forbidden('You cannot change other user settings');
+    await Server.sys.user.setSoftware(data.name, null);
+    res.status(200).end();
+}));
+
 // Update color
 router.put('/id/:name/color/:color', [
+    check('name').matches(usernameRegex),
+    check('color').matches(colorRegex),
+    middleware.passedAllChecks,
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization({ groups: ['color'] })
+], wrap(async function(req, res) {
+    const data = req.locals.data;
+    const is_admin = await Server.sys.user.isAdmin(req.locals.user.username);
+    if (data.name != req.locals.user.username && !is_admin)
+        throw new Server.errors.Forbidden('You cannot change other user settings');
+    await Server.sys.user.setColor(data.name, data.color);
+    res.status(200).end();
+}));
+
+// Delete color
+router.delete('/id/:name/color', [
     check('name').matches(usernameRegex),
     middleware.passedAllChecks,
     middleware.authentication,
     middleware.notAnonymous,
     middleware.authorization({ groups: ['color'] })
 ], wrap(async function(req, res) {
-    // Manually check "color" because it's special
     const data = req.locals.data;
-    if (!(data.color === null || (typeof data.color === 'string' && data.color.match(colorRegex))))
-        throw new Server.errors.UnprocessableEntity('"color" must be either null or 6-char hex');
     const is_admin = await Server.sys.user.isAdmin(req.locals.user.username);
     if (data.name != req.locals.user.username && !is_admin)
         throw new Server.errors.Forbidden('You cannot change other user settings');
-    await Server.sys.user.setColor(data.name, data.color);
+    await Server.sys.user.setColor(data.name, null);
     res.status(200).end();
 }));
 

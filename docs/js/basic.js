@@ -96,9 +96,21 @@ function T(text) {
     return document.createTextNode(text);
 }
 function status(text) {
-    $('#status').innerHTML = '';
-    $('#status').appendChild(T(text));
+    const s = $('#status');
+    if (!s)
+        return;
+    s.innerHTML = '';
+    s.appendChild(T(text));
 }
+
+window.addEventListener('error', (e) => {
+    console.log('Error', e);
+
+    if (e.error instanceof XMLHttpRequest)
+        status(`Request error: ${e.error.status} - ${e.error.responseText}`);
+    else
+        status(`Error: ${e.message}`);
+});
 
 /*
 classes used:

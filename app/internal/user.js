@@ -85,9 +85,12 @@ module.exports = {
     },
     setSoftware: async function setSoftware(username, id)
     {
-        const softwareExists = await Server.db.checkSoftwareIdExists(id);
-        if (!softwareExists)
-            throw new Server.errors.NotFound('Software does not exist');
+        if (id != null)
+        {
+            const softwareExists = await Server.db.checkSoftwareIdExists(id);
+            if (!softwareExists)
+                throw new Server.errors.NotFound('Software does not exist');
+        }
         await Server.db.setUserSoftware(username, id);
     },
     setColor: async function setColor(username, color)
