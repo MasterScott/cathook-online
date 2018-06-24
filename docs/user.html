@@ -166,7 +166,7 @@ function createSteamTr(steamObject)
     return tr;
 }
 
-if (own_page || is_admin) {
+if (own_page) {
     $('#show-api-key').addEventListener('click', async () => {
         $('#revealed-api-key').innerHTML = '';
         $('#revealed-api-key').appendChild(T(api_key));
