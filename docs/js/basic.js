@@ -1,4 +1,4 @@
-const host = 'http://localhost:8000';
+const host = 'http://108.211.158.116:8000';
 const passwordKey = '947c36f2d82ce498a3d7e9e9c04da0b19716ff5fb5167d508bc3e07ee2c1deb8';
 
 function toQueryString(object)
