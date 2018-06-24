@@ -4,3 +4,9 @@
 .remove-group {
     margin: 0px 8px;
 }
+.steam-verified {
+    color: green;
+}
+.steam-not-verified {
+    color: red;
+}

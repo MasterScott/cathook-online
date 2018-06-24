@@ -212,8 +212,15 @@ router.get('/id/:name/steam/:start/:count', [
     const can_see = await Server.db.checkAnyOfGroups(req.locals.user.username, ['admin', 'can_verify']);
     if (data.name != req.locals.user.username && !can_see)
         throw new Server.errors.Forbidden();
-    const list = Server.db.getUserSteamIdList(data.name, data.start, data.count);
-    throw new Server.errors.NotImplemented();
+    const list = await Server.db.getUserSteamIdList(data.name, data.start, data.count);
+    res.status(200).json(list.map(s => {
+        return {
+            first_used: s.first_used,
+            last_used: s.last_used,
+            steam3: s.steam3,
+            verified: s.verified
+        }
+    }));
 }));
 
 // Generate new access key

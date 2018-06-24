@@ -92,6 +92,9 @@ async function fillGroupSelect(element)
 function $(selector) {
     return document.querySelector(selector);
 }
+function c$(name) {
+    return document.createElement(name);
+}
 function T(text) {
     return document.createTextNode(text);
 }

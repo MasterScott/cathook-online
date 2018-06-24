@@ -62,7 +62,19 @@
 
         <div class="hidden show-if-group-can_verify show-if-own">
             <p>Associated Steam accounts: <span id="steam-account-count"></span></p>
-            <table id="steam-account-table">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Verified</td>
+                        <td>URL</td>
+                        <td>First used</td>
+                        <td>Last used</td>
+                        <td>Delete</td>
+                    </tr>
+                </thead>
+                <tbody id="steam-account-table">
+
+                </tbody>
             </table>
             <a href="#" id="navigate-steam-back">&lt;</a>
             <input type="text" id="navigate-steam-input">
@@ -84,7 +96,7 @@ async function refreshInviteList() {
         const data = JSON.parse(inviteXhr.responseText);
         $('#invites').innerHTML = '';
         for (i of data) {
-            const li = document.createElement('li');
+            const li = c$('li');
             li.appendChild(document.createTextNode(i.key));
             $('#invites').appendChild(li);
         }
@@ -97,12 +109,65 @@ async function createInvite() {
         return;
     try {
         const xhr = await request.post('/invite');
-        const li = document.createElement('li');
+        const li = c$('li');
         li.appendChild(document.createTextNode(xhr.responseText));
         list.appendChild(li);
     } catch (e) {
         status(`Error: ${e.status} - ${e.responseText}`);
     }
+}
+
+function createSteamTr(steamObject)
+{
+    const verified = steamObject.verified;
+    const steam3 = steamObject.steam3;
+    const tr = c$('tr');
+    const td_first_used = c$('td');
+    td_first_used.appendChild(T((new Date(Date.parse(steamObject.first_used)).toLocaleString())));
+    const td_last_used = c$('td');
+    td_last_used.appendChild(T((new Date(Date.parse(steamObject.last_used)).toLocaleString())));
+    const td_steam3 = c$('td');
+    const a_steam3 = c$('a');
+    a_steam3.href = `https://steamcommunity.com/profiles/[U:1:${steam3}]`;
+    a_steam3.target = '_blank';
+    a_steam3.innerHTML = steam3;
+    td_steam3.appendChild(a_steam3);
+    const td_verified = c$('td');
+    td_verified.appendChild(T(verified ? 'Yes' : 'No'));
+    td_verified.classList.add(verified ? 'steam-verified' : 'steam-not-verified');
+
+    const td_delete = c$('td');
+    const a_delete = c$('a');
+    a_delete.innerHTML = 'Delete';
+    a_delete.href = '#';
+    a_delete.addEventListener('click', async() => {
+        await request.delete(`/game/steam/${steam3}`);
+        a_delete.innerHTML = '';
+    });
+    td_delete.appendChild(a_delete);
+
+    tr.appendChild(td_verified);
+    tr.appendChild(td_steam3);
+    tr.appendChild(td_first_used);
+    tr.appendChild(td_last_used);
+    tr.appendChild(td_delete);
+
+    if (is_admin || has_groups['can_verify']) {
+        const td_verify = c$('td');
+        const a_verify = c$('a');
+        a_verify.href = '#';
+        a_verify.innerHTML = verified ? 'Unverify' : 'Verify';
+        a_verify.addEventListener('click', async() => {
+            if (verified)  
+                await request.delete(`/game/verify/${steam3}`);
+            else
+                await request.post(`/game/verify/${steam3}`);
+            a_verify.innerHTML = '';
+        });
+        td_verify.appendChild(a_verify);
+        tr.appendChild(td_verify);
+    }
+    return tr;
 }
 
 if (own_page || is_admin) {
@@ -151,14 +216,30 @@ if (own_page || is_admin)
 
 if (has_groups['can_verify'] || is_admin)
 {
-    $('#navigate-steam-back').addEventListener('click', async() => {
+    let currentPage = 0;
 
-    });
-    $('#navigate-steam-forward').addEventListener('click', async() => {
+    async function jumpToPage(page) {
+        if (page < 0) return;
+        currentPage = page;
+        $('#navigate-steam-input').value = page;
+        const t = $('#steam-account-table');
+        t.innerHTML = '';
+        const dataXhr = await request.get(`/user/id/${username}/steam/${page * 10}/10`);
+        const data = JSON.parse(dataXhr.responseText);
+        for (const d of data) {
+            t.appendChild(createSteamTr(d));
+        }
+    }
+    jumpToPage(0);
+    function nextPage() { jumpToPage(currentPage + 1); }
+    function prevPage() { jumpToPage(currentPage - 1); }
 
-    });
-    $('#navigate-steam-input').addEventListener('keydown', async() => {
-
+    $('#navigate-steam-back').addEventListener('click', prevPage);
+    $('#navigate-steam-forward').addEventListener('click', nextPage);
+    $('#navigate-steam-input').addEventListener('keydown', async(e) => {
+        if (e.key == 'Enter') {
+            jumpToPage(parseInt($('#navigate-steam-input').value));
+        }
     });
 }
 
@@ -171,11 +252,11 @@ if (has_groups['can_verify'] || is_admin)
     $('#color').appendChild(T(data.color));
     for (const g of data.groups)
     {
-        const li = document.createElement('li');
+        const li = c$('li');
         li.appendChild(T(g.name));
         if (is_admin)
         {
-            const remove = document.createElement('a');
+            const remove = c$('a');
             remove.href = '#';
             remove.innerHTML = 'remove';
             remove.classList.add('remove-group');
