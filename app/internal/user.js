@@ -26,7 +26,20 @@ module.exports = {
             throw new Server.errors.NotFound('User not registered');
         const passwordMatches = await bcrypt.compare(password, user.password_hash);
         if (passwordMatches)
-            return user.api_key;
+        {
+            // Successfully logged in
+            const groups = await Server.sys.user.getGroups(user.username);
+            return {
+                api_key: user.api_key,
+                username: user.username,
+                groups: groups.map(group => {
+                    return {
+                        name: group.name,
+                        display: group.display
+                    }
+                })
+            };
+        }
         throw new Server.errors.Unauthorized('Bad credentials');
     },
     info: function info(raw) {

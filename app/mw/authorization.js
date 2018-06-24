@@ -14,7 +14,7 @@ module.exports = function(options) {
             throw new Server.errors.InternalServerError('Authorization before authentication');
         const s = await Server.db.checkAnyOfGroups(req.locals.user.username, groups);
         if (!s)
-            throw new Server.errors.Forbidden(`You need to be in any of the groups ${groups} for that action`);
+            throw new Server.errors.Forbidden(`You need to be in any of the groups: (${groups}) for that action`);
         next();
     });
 }

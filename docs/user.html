@@ -42,7 +42,7 @@
         <div class="hidden show-own">
             <p>To use cathook online features, you will need your API key. After you launch cathook, type "cat_online_login &lt;KEY&gt;" in console.</p>
             <input id="show-api-key" value="Show your API key" type="button">
-            <p id="revealed-api-key"></p>
+            <span id="revealed-api-key"></span>
         </div>
 
         <div>
@@ -71,9 +71,29 @@
 
         <p id="status"></p>
         <script>
-const query = new URLSearchParams(window.location.search);
 
-console.log(query.get('name'));
+const query = new URLSearchParams(window.location.search);
+const username = query.has('name') ? query.get('name') : local_user.username;
+
+$('#show-api-key').addEventListener('click', async () => {
+    $('#revealed-api-key').innerHTML = '';
+    $('#revealed-api-key').appendChild(T(api_key));
+});
+
+(async function fillUserData() {
+    const dataXhr = await request.get('/user/id/' + username);
+    const data = JSON.parse(dataXhr.responseText);
+    $('#username').appendChild(T(data.username));
+    $('#registered').appendChild(T(new Date(data.registered_at).toLocaleString()));
+    $('#software').appendChild(T(data.software));
+    $('#color').appendChild(T(data.color));
+    for (const g of data.groups)
+    {
+        const li = document.createElement('li');
+        li.appendChild(T(g.name));
+        $('#groups').appendChild(li);
+    }
+})();
 
 const list = document.getElementById('invites');
 async function refreshInviteList()
@@ -95,7 +115,7 @@ async function refreshInviteList()
 
 document.getElementById('generate').addEventListener('click', async () => {
     try {
-        const xhr = await request.post(`${host}/invite?key=${localStorage.api_key}`);
+        const xhr = await request.post('/invite');
         const li = document.createElement('li');
         li.appendChild(document.createTextNode(xhr.responseText));
         list.appendChild(li);

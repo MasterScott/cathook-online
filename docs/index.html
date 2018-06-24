@@ -6,7 +6,10 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h1>Welcome to cathook</h1>
+        <h1>Welcome to cathook online</h1>
+        <p class="alpha-warning">
+            This feature is currently in very early alpha testing. Server/client crashes, database resets, etc., shouldn't be a surprise for you.
+        </p>
         <ul>
             <li><a href="register.html">Register</a></li>
         </ul>
@@ -16,7 +19,9 @@
             <tr><td><input type="button" id="login" value="Login"></td></tr>
         </table>
         <p id="status"></p>
-        <a href="user.html">User page</a>
+        <div class="hidden show-logged-in">
+            <a href="user.html">User page</a>
+        </div>
         <script>
 const usernameRegex = /^[0-9_a-z\-]{3,32}$/i;
 
@@ -28,9 +33,10 @@ document.getElementById('login').addEventListener('click', async () => {
         return;
 
     try {
-        const key = await request.post(`${host}/user/login`, { username: username, password: sha256.hmac(passwordKey, password) });
-        localStorage.api_key = key.responseText;
-        document.getElementById('status').innerHTML = 'You are logged in, now go to your user page';
+        const dataXhr = await request.post(`/user/login`, { username: username, password: sha256.hmac(passwordKey, password) });
+        const data = JSON.parse(dataXhr.responseText);
+        localStorage.user = JSON.stringify(data);
+        document.getElementById('status').innerHTML = `You are logged in as ${data.username}, now you can go to your user page`;
     } catch (e) {
         document.getElementById('status').innerHTML = `Error: ${e.status} - ${e.responseText}`
     }

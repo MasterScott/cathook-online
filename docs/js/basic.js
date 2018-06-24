@@ -6,12 +6,20 @@ function toQueryString(object)
     return Object.keys(object).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(object[k])}`).join('&');
 }
 
+let local_user = null;
+let api_key = null;
+
+try {
+    local_user = JSON.parse(localStorage.getItem('user'));
+    api_key = local_user.api_key;
+} catch (e) {}
+
 const request = {
     perform: async function perform(method, endpoint, body, qs) {
         return new Promise((resolve, reject) => {
             if (qs == null)
                 qs = {};
-            qs.key = localStorage.api_key;
+            qs.key = api_key;
             const xhr = new XMLHttpRequest();
             console.log('request', endpoint);
             xhr.open(method, host + endpoint + '?' + toQueryString(qs), true);
@@ -47,6 +55,10 @@ async function fillSoftwareSelect(element)
 {
     const softwareXhr = await request.get('/software');
     const software = JSON.parse(softwareXhr.responseText);
+    software.push({
+        id: null,
+        name: 'none'
+    });
     for (const s of software)
     {
         const opt = document.createElement('option');
@@ -67,4 +79,11 @@ async function fillGroupSelect(element)
         opt.innerHTML = g.name;
         element.appendChild(opt);
     }
+}
+
+function $(selector) {
+    return document.querySelector(selector);
+}
+function T(text) {
+    return document.createTextNode(text);
 }

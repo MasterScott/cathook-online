@@ -87,17 +87,17 @@ router.get('/steam/:steam', [
         throw new Server.errors.NotFound();
 }));
 
-// Return access key
+// Return access key + user data
 router.post('/login', [
     check('username').matches(usernameRegex),
     check('password').matches(passwordRegex),
     middleware.passedAllChecks
 ], wrap(async function(req, res) {
-    const key = await Server.sys.user.login(req.locals.data.username, req.locals.data.password);
-    if (key == null)
+    const data = await Server.sys.user.login(req.locals.data.username, req.locals.data.password);
+    if (data == null)
         throw new Server.errors.InternalServerError();
     else
-        res.status(200).end(key);
+        res.status(200).json(data);
 }));
 
 // Add user group

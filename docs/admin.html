@@ -19,7 +19,7 @@
         <div>
             <input id="group-create-name" type="text" placeholder="Name">
             <input id="group-create-display" type="text" placeholder="Display">
-            <input id="software-create" type="button" value="Create group">
+            <input id="group-create" type="button" value="Create group">
         </div>
         <div>
             <select id="group-select"></select>
@@ -31,7 +31,45 @@
             <tr><td>Active invites</td><td id="stats-invites"></td></tr>
         </table>
         <script>
-            
+const software_select = $('#software-select');
+const group_select = $('#group-select');
+
+fillSoftwareSelect(software_select);
+fillGroupSelect(group_select);
+
+(async function getStats() {
+    const statsXhr = await request.get('/admin/stats');
+    const stats = JSON.parse(statsXhr.responseText);
+    $('#stats-users').innerHTML = stats.users;
+    $('#stats-steam-accounts').innerHTML = stats.steamid;
+    $('#stats-invites').innerHTML = stats.invites;
+})();
+
+document.getElementById('software-create').addEventListener('click', async () => {
+    const name = $('#software-create-name');
+    const developers = $('#software-create-developers');
+    const url = $('#software-create-url');
+    if (!confirm(`Are you sure you want to create software ${name.value}, by ${developers.value} [${url.value}]?`))
+        return;
+});
+document.getElementById('group-create').addEventListener('click', async () => {
+    const name = $('#group-create-name');
+    const display = $('#group-create-display');
+    const display_name = display.value.length ? display.value : null;
+    if (!confirm(`Are you sure you want to create group ${name.value} displayed as "${display_name}" in-game?`))
+        return;
+});
+document.getElementById('software-delete').addEventListener('click', async () => {
+    const option = software_select.options[software_select.selectedIndex];
+    if (!confirm('Are you sure you want to delete software ' + option.innerHTML + '?'))
+        return;
+    
+});
+document.getElementById('group-delete').addEventListener('click', async () => {
+    const option = group_select.options[group_select.selectedIndex];
+    if (!confirm('Are you sure you want to delete group ' + option.innerHTML + '?'))
+        return;
+});
         </script>
     </body>
 </html>

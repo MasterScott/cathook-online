@@ -21,6 +21,7 @@ module.exports = (app) => {
     app.use('/user', require('./route/user'));
     app.use('/group', require('./route/group'));
     app.use('/software', require('./route/software'));
+    app.use('/admin', require('./route/admin'));
 
     app.use(errorHandler);
 }

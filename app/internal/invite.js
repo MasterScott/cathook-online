@@ -17,10 +17,10 @@ module.exports = {
     {
         const invites = await Server.db.getInvites(user.id);
         const result = [];
-        for (i of invites)
+        for (const i of invites)
         {
             result.push({
-                key: i.value
+                key: i.key
             })
         }
         return result;

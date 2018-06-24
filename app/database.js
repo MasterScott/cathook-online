@@ -113,7 +113,7 @@ class DbInterface
             `SELECT 1 FROM usergroups 
             INNER JOIN groups ON groups.id = usergroups.group_id 
             INNER JOIN users ON users.id = usergroups.user_id 
-            WHERE groups.name IN ($1) AND users.username = $2`, [groups, username]);
+            WHERE groups.name = ANY ($1) AND users.username = $2`, [groups, username]);
         return !!result.rowCount;
     }
 
@@ -230,6 +230,17 @@ class DbInterface
         return result.rows[0].id;
     }
 
+    // STATS
+
+    async getCountStats()
+    {
+        console.log('stats');
+        const result = await this.client.query(`SELECT
+            (SELECT COUNT(1) FROM users) AS users,
+            (SELECT COUNT(1) FROM steamid) AS steamid,
+            (SELECT COUNT(1) FROM invites) AS invites`);
+        return result.rows[0];
+    }
 }
 
 module.exports = DbInterface;

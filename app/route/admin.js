@@ -10,4 +10,13 @@ const middleware = require('../middleware');
     Administrative Tools
 */
 
+router.get('/stats', [
+    middleware.authentication,
+    middleware.notAnonymous,
+    middleware.authorization()
+], wrap(async function(req, res) {
+    const stats = await Server.db.getCountStats();
+    res.status(200).json(stats);
+}));
+
 module.exports = router;
