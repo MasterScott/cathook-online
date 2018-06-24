@@ -1,4 +1,3 @@
-const host = 'http://108.211.158.116:8000';
 const passwordKey = '947c36f2d82ce498a3d7e9e9c04da0b19716ff5fb5167d508bc3e07ee2c1deb8';
 
 function toQueryString(object)
@@ -30,7 +29,7 @@ const request = {
             qs.key = api_key;
             const xhr = new XMLHttpRequest();
             console.log('request', endpoint);
-            xhr.open(method, host + endpoint + '?' + toQueryString(qs), true);
+            xhr.open(method, endpoint + '?' + toQueryString(qs), true);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4)
                 {
@@ -142,7 +141,7 @@ function revealHidden(own_page) {
             if (c.startsWith('show-if-group-'))
                 if (has_groups[c.substr('show-if-group-'.length)])
                     return el.classList.remove('hidden');
-            if (c.startsWith('show-if-own') && own_page)
+            if (c == 'show-if-own' && own_page)
                 return el.classList.remove('hidden');
         }
     });

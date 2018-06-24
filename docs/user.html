@@ -39,7 +39,7 @@
             <span id="color-preview">color preview</span>
         </div>
 
-        <div class="hidden show-only-own">
+        <div class="hidden show-if-own">
             <p>To use cathook online features, you will need your API key. After you launch cathook, type "cat_online_login &lt;KEY&gt;" in console.</p>
             <input id="show-api-key" value="Show your API key" type="button">
             <span id="revealed-api-key"></span>
@@ -54,7 +54,7 @@
             <ul id="groups"></ul>
         </div>
 
-        <div class="hidden show-only-own">
+        <div class="hidden show-only-own show-if-group-can_invite">
             <p>Invites:</p>
             <input type="button" id="generate" value="Generate invite">
             <ul id="invites"></ul>
@@ -107,14 +107,10 @@ async function refreshInviteList() {
 async function createInvite() {
     if (!own_page)
         return;
-    try {
-        const xhr = await request.post('/invite');
-        const li = c$('li');
-        li.appendChild(document.createTextNode(xhr.responseText));
-        list.appendChild(li);
-    } catch (e) {
-        status(`Error: ${e.status} - ${e.responseText}`);
-    }
+    const xhr = await request.post('/invite');
+    const li = c$('li');
+    li.appendChild(document.createTextNode(xhr.responseText));
+    $('#invites').appendChild(li);
 }
 
 function createSteamTr(steamObject)
